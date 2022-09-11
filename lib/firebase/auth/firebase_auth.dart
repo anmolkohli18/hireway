@@ -11,11 +11,14 @@ void firebaseAuth() {
   });
 }
 
-void createUserAccount() async {
+bool isLoggedIn() {
+  return FirebaseAuth.instance.currentUser != null;
+}
+
+void createUserAccount(String email, String password) async {
   try {
     UserCredential userCredential = await FirebaseAuth.instance
-        .createUserWithEmailAndPassword(
-            email: "anmol.kohli18@gmail.com", password: "SuperSecretPassword!");
+        .createUserWithEmailAndPassword(email: email, password: password);
     User? user = userCredential.user;
     if (user != null && !user.emailVerified) {
       await user.sendEmailVerification();

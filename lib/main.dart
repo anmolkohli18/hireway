@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:milkyway/candidate/create.dart';
-import 'package:milkyway/documents/doc_structure.dart';
+import 'package:milkyway/candidate/basic_info.dart';
 import 'package:milkyway/firebase/auth/email_page.dart';
+import 'package:milkyway/firebase/auth/firebase_auth.dart';
 import 'package:milkyway/firebase/firebase_config.dart';
 
 void main() async {
@@ -22,35 +22,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         scaffoldBackgroundColor: Colors.deepPurple,
       ),
-      home: const MyHomePage(
-        title: 'Milkyway',
-      ),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: const Center(child: AddCandidate()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      initialRoute: isLoggedIn() ? '/login' : '/',
+      routes: {
+        '/': (context) => const CandidateBasicInfo(),
+        '/login': (context) => const GetEmailForm()
+      },
     );
   }
 }
