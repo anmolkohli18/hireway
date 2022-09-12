@@ -5,8 +5,8 @@ import 'package:milkyway/firebase/candidate/model.dart';
 
 final candidate = candidates.where("owner", isEqualTo: "anmol");
 
-class Candidates extends StatelessWidget {
-  const Candidates({Key? key}) : super(key: key);
+class CandidatesStore extends StatelessWidget {
+  const CandidatesStore({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
