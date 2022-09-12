@@ -108,11 +108,12 @@ class _CandidateBasicInfoState extends State<CandidateBasicInfo> {
                                       borderRadius:
                                           BorderRadius.circular(18)))),
                           onPressed: () {
+                            addCandidate(fullName, role);
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CandidateResume()));
+                                    builder: (context) => CandidateResume(
+                                        candidateName: fullName, role: role)));
                           },
                           child: const Text("Next: Upload Resume")),
                     ),

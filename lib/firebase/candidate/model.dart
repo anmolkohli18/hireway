@@ -13,20 +13,24 @@ final candidates = FirebaseFirestore.instance
 class Candidate {
   const Candidate({
     required this.fullName,
+    required this.role,
     required this.resume,
   });
 
   final String fullName;
+  final String role;
   final String resume;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
             fullName: json['fullName']! as String,
+            role: json['role']! as String,
             resume: json['resume']! as String);
 
   Map<String, Object?> toJson() {
     return {
       'fullName': fullName,
+      'role': role,
       'resume': resume,
     };
   }

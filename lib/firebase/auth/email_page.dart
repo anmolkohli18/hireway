@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:milkyway/firebase/auth/password_page.dart';
-import 'package:milkyway/firebase/candidate/create.dart';
 
 class GetEmailForm extends StatefulWidget {
   const GetEmailForm({Key? key}) : super(key: key);
@@ -37,7 +36,6 @@ class _GetEmailFormState extends State<GetEmailForm> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      //color: Colors.white
                     ),
                   ),
                 ),

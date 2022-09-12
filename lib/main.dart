@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:milkyway/color.dart';
 import 'package:milkyway/candidate/basic_info.dart';
 import 'package:milkyway/firebase/auth/email_page.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
@@ -16,11 +17,30 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    return consoleApp();
+  }
+
+  MaterialApp onboardingApp() {
     return MaterialApp(
       title: 'Milky Way',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.deepPurple,
+        primarySwatch: primaryOnboardingColor,
+        scaffoldBackgroundColor: primaryOnboardingColor,
+      ),
+      initialRoute: isLoggedIn() ? '/login' : '/',
+      routes: {
+        '/': (context) => const CandidateBasicInfo(),
+        '/login': (context) => const GetEmailForm()
+      },
+    );
+  }
+
+  MaterialApp consoleApp() {
+    return MaterialApp(
+      title: 'Milky Way',
+      theme: ThemeData(
+        primarySwatch: primaryConsoleColor,
+        scaffoldBackgroundColor: primaryConsoleColor,
       ),
       initialRoute: isLoggedIn() ? '/login' : '/',
       routes: {

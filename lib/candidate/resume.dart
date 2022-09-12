@@ -1,9 +1,14 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 import 'package:milkyway/firebase/storage/upload.dart';
 
 class CandidateResume extends StatefulWidget {
-  const CandidateResume({Key? key}) : super(key: key);
+  final String candidateName;
+  final String role;
+  const CandidateResume(
+      {Key? key, required this.candidateName, required this.role})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _CandidateResumeState();
@@ -11,6 +16,7 @@ class CandidateResume extends StatefulWidget {
 
 class _CandidateResumeState extends State<CandidateResume> {
   String resume = "";
+  late Future<FilePickerResult?> filePicked;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -45,8 +51,10 @@ class _CandidateResumeState extends State<CandidateResume> {
                                     RoundedRectangleBorder>(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(18)))),
-                        onPressed: () => selectAndUploadFile(
-                            "client-name", "candidate-name"),
+                        onPressed: () {
+                          filePicked =
+                              selectFile(widget.candidateName, widget.role);
+                        },
                         child: const Text("Upload from computer"))),
                 const SizedBox(
                   height: 30,
@@ -63,7 +71,23 @@ class _CandidateResumeState extends State<CandidateResume> {
                                   RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.circular(18)))),
-                          onPressed: () {},
+                          onPressed: () {
+                            filePicked.then((filePickerResult) {
+                              if (filePickerResult != null) {
+                                uploadFile(widget.candidateName, widget.role,
+                                    filePickerResult);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => CandidateResume(
+                                            candidateName: widget.candidateName,
+                                            role: widget.role)));
+                              } else {
+                                print(
+                                    "Resume file not found. Please try uploading the file again.");
+                              }
+                            });
+                          },
                           child: const Text("Add this candidate")),
                     ),
                     SizedBox(
