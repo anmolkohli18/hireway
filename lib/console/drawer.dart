@@ -1,42 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:milkyway/color.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:milkyway/colors.dart';
+import 'package:milkyway/console/app_console.dart';
 
-class DrawerWidget extends StatefulWidget {
-  const DrawerWidget({Key? key}) : super(key: key);
-
-  @override
-  State<DrawerWidget> createState() => _DrawerWidgetState();
-}
-
-class _DrawerWidgetState extends State<DrawerWidget> {
-  int selectedItem = 0;
-
+class DrawerWidget extends ConsumerWidget {
   final menuItems = [
-    {"Home", Icons.home_outlined},
-    {"Candidates", Icons.person_outline},
-    {"Schedule", Icons.calendar_today_outlined}
+    ["Home", Icons.home_outlined, '/home'],
+    ["Candidates", Icons.person_outline, '/candidates'],
+    ["Schedule", Icons.calendar_today_outlined, '/schedule']
   ];
 
+  DrawerWidget({Key? key}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedMenuItem = ref.watch(selectedMenuProvider.state).state;
+
     var menuListTiles = <Padding>[];
 
     for (var i = 0; i < menuItems.length; i++) {
       var item = menuItems[i];
-      String itemName = item.first as String;
-      IconData iconData = item.last as IconData;
+      String itemName = item[0] as String;
+      IconData iconData = item[1] as IconData;
+      String route = item[2] as String;
+
       menuListTiles.add(Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-          decoration: i == selectedItem
+          decoration: i == selectedMenuItem
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(8), color: highlightColor)
               : const BoxDecoration(),
           child: ListTile(
             onTap: () {
-              setState(() {
-                selectedItem = i;
-              });
+              ref.read(selectedMenuProvider.notifier).state = i;
+              Navigator.pushNamed(context, route);
             },
             leading: Icon(iconData, color: primaryColor, size: 28),
             title: Text(
@@ -48,16 +46,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       ));
     }
 
-    const ListTile(
-      leading: Icon(Icons.factory_outlined, color: primaryColor, size: 42),
-      title: Text(
-        "Client Name",
-        style: heading1,
-      ),
-    );
-
     return Container(
-      width: 240,
+      width: 300,
       color: Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

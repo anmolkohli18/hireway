@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:milkyway/colors.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
-import 'package:milkyway/firebase/candidate/create.dart';
 
 class CreatePasswordForm extends StatefulWidget {
   final String email;
@@ -17,6 +17,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: primaryColor,
       body: Center(
         child: Container(
           width: 448,
@@ -38,7 +39,6 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      //color: Colors.white
                     ),
                   ),
                 ),
@@ -84,7 +84,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                                       borderRadius: BorderRadius.circular(8)))),
                           onPressed: () {
                             createUserAccount(widget.email, _password);
-                            Navigator.pushNamed(context, "/");
+                            Navigator.pushNamed(context, "/home");
                           },
                           child: const Text(
                             "Continue",

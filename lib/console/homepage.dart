@@ -2,11 +2,15 @@ import 'package:enhance_stepper/enhance_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:milkyway/colors.dart';
 
-class OnboardingSteps extends StatelessWidget {
-  const OnboardingSteps({Key? key}) : super(key: key);
+class Homepage extends StatelessWidget {
+  const Homepage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    return onboardingSteps(context);
+  }
+
+  Widget onboardingSteps(BuildContext context) {
     return Center(
         child: Container(
             width: 648,

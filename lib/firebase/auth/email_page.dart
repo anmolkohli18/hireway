@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:milkyway/colors.dart';
+import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/firebase/auth/password_page.dart';
 
 class GetEmailForm extends StatefulWidget {
@@ -15,6 +17,7 @@ class _GetEmailFormState extends State<GetEmailForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: primaryColor,
       body: Center(
         child: Container(
           width: 448,
@@ -42,8 +45,10 @@ class _GetEmailFormState extends State<GetEmailForm> {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 8.0),
                   child: Text(
-                    "Email",
-                    style: TextStyle(fontWeight: FontWeight.w100),
+                    "Email address",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 TextFormField(
@@ -79,14 +84,14 @@ class _GetEmailFormState extends State<GetEmailForm> {
                           onPressed: () {
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(
+                                MyCustomRoute(
                                     builder: (context) => CreatePasswordForm(
                                           email: _email,
                                         )));
                           },
                           child: const Text(
                             "Get started",
-                            style: TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: 20, color: Colors.white),
                           )),
                     ),
                   ],

@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
 
-Future<FilePickerResult?> selectFile(String candidateName, String role) async {
+Future<FilePickerResult?> selectFile() async {
   FilePickerResult? result = await FilePicker.platform
       .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
 
