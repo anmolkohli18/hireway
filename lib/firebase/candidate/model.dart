@@ -12,26 +12,39 @@ final candidates = FirebaseFirestore.instance
 @immutable
 class Candidate {
   const Candidate({
-    required this.fullName,
+    required this.name,
     required this.role,
     required this.resume,
+    required this.email,
+    required this.phone,
+    required this.skills,
   });
 
-  final String fullName;
+  final String name;
   final String role;
   final String resume;
+  final String email;
+  final String phone;
+  final String skills;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
-            fullName: json['fullName']! as String,
-            role: json['role']! as String,
-            resume: json['resume']! as String);
+          name: json['name']! as String,
+          role: json['role']! as String,
+          resume: json['resume']! as String,
+          email: json['email']! as String,
+          phone: json['phone']! as String,
+          skills: json['skills']! as String,
+        );
 
   Map<String, Object?> toJson() {
     return {
-      'fullName': fullName,
+      'name': name,
       'role': role,
       'resume': resume,
+      'email': email,
+      'phone': phone,
+      'skills': skills,
     };
   }
 }

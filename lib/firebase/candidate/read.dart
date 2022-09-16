@@ -35,7 +35,7 @@ class CandidatesStore extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      data.docs[index].data().fullName,
+                      data.docs[index].data().name,
                       style: const TextStyle(color: Colors.white),
                     ),
                     Text(

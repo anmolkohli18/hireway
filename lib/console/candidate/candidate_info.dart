@@ -94,7 +94,14 @@ class _CandidateInfoState extends State<CandidateInfo>
     uploadFile(_fullName, _filePicked!).then((resumePath) {
       if (resumePath != null) {
         addNewCandidate(
-            Candidate(fullName: _fullName, role: role, resume: resumePath));
+            // TODO
+            Candidate(
+                name: _fullName,
+                email: "",
+                phone: "",
+                role: role,
+                resume: resumePath,
+                skills: ""));
       }
     }).onError((error, stackTrace) {
       print("Could not upload the file");

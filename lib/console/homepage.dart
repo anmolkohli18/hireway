@@ -14,7 +14,7 @@ class Homepage extends StatelessWidget {
     return Center(
         child: Container(
             width: 648,
-            height: 500,
+            height: 520,
             padding: const EdgeInsets.all(40),
             decoration: const BoxDecoration(
               color: Colors.white,

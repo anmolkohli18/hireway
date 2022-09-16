@@ -11,7 +11,7 @@ const Color successColor = Color(0xFF001C63);
 const Color lightHeadingColor = Color(0xFFABB2D9);
 const Color highlightColor = Color.fromARGB(20, 34, 65, 205);
 
-const Color primaryButtonColor = Color(0xFF2240CD);
+const Color primaryButtonColor = Colors.black; //Color(0xFF2240CD);
 const Color secondaryButtonColor = Color(0xFF4D4D4D);
 const Color disabledButtonColor = Color(0xFFF2F4FD);
 
@@ -20,15 +20,16 @@ Color formDefaultColor = Colors.grey.shade700;
 const Color lightTextAndBorderColor = Color(0XFFD0D4EA);
 
 const TextStyle heading1 =
-    TextStyle(color: primaryColor, fontSize: 28, fontWeight: FontWeight.bold);
+    TextStyle(color: primaryColor, fontSize: 32, fontWeight: FontWeight.bold);
 const TextStyle heading2 =
     TextStyle(color: primaryColor, fontSize: 20, fontWeight: FontWeight.bold);
 const TextStyle heading3 =
     TextStyle(color: primaryColor, fontSize: 14, fontWeight: FontWeight.bold);
 
-const TextStyle secondaryTextStyle = TextStyle(color: secondaryColor);
+const TextStyle secondaryTextStyle =
+    TextStyle(color: secondaryColor, fontSize: 16);
 
-const TextStyle subHeading = TextStyle(color: primaryColor, fontSize: 14);
+const TextStyle subHeading = TextStyle(color: primaryColor, fontSize: 18);
 
 const TextStyle disabledHeading2 = TextStyle(
     color: lightHeadingColor, fontSize: 18, fontWeight: FontWeight.bold);
