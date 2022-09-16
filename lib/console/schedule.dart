@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:milkyway/colors.dart';
+import 'package:milkyway/settings.dart';
 
 class SchedulesList extends StatelessWidget {
   const SchedulesList({Key? key}) : super(key: key);

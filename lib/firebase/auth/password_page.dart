@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:milkyway/colors.dart';
+import 'package:milkyway/settings.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 
 class CreatePasswordForm extends StatefulWidget {

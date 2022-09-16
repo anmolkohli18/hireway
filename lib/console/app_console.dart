@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/colors.dart';
-import 'package:milkyway/console/candidate/basic_info.dart';
-import 'package:milkyway/console/candidates_list.dart';
+import 'package:milkyway/settings.dart';
+import 'package:milkyway/console/candidate/candidate_info.dart';
+import 'package:milkyway/console/candidate/candidates_list.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/drawer.dart';
 import 'package:milkyway/console/routes/routing.dart';
@@ -25,29 +25,30 @@ class AppConsole extends ConsumerWidget {
             subtitle1: TextStyle(color: primaryColor),
           ),
           textSelectionTheme: const TextSelectionThemeData(
-              cursorColor: primaryButton, selectionColor: lightHeadingColor),
+              cursorColor: primaryButtonColor,
+              selectionColor: lightHeadingColor),
           inputDecorationTheme: const InputDecorationTheme(
               border: OutlineInputBorder(
-                  borderSide: BorderSide(color: primaryButton)),
+                  borderSide: BorderSide(color: primaryButtonColor)),
               focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: primaryButton))),
+                  borderSide: BorderSide(color: primaryButtonColor))),
           outlinedButtonTheme: OutlinedButtonThemeData(
               style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 40),
-                  primary: primaryButton,
-                  side: const BorderSide(color: primaryButton))),
+                  primary: primaryButtonColor,
+                  side: const BorderSide(color: primaryButtonColor))),
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                   minimumSize: const Size(100, 40),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
+                      borderRadius: BorderRadius.circular(18)),
                   textStyle: const TextStyle(fontSize: 14),
-                  primary: primaryButton,
+                  primary: primaryButtonColor,
                   onPrimary: Colors.white)),
           primarySwatch: primaryConsoleColor,
           scaffoldBackgroundColor: const Color(0xFFF4F6F7),
           colorScheme: const ColorScheme.light(
-              background: primaryButton, secondary: secondaryButton)),
+              background: primaryButtonColor, secondary: secondaryButtonColor)),
       initialRoute: isLoggedIn() ? '/login' : '/home',
       onGenerateRoute: (settings) {
         if (settings.name == '/home') {
@@ -60,7 +61,7 @@ class AppConsole extends ConsumerWidget {
                 const Expanded(child: CandidatesList()), settings.name);
           } else if (settings.name == '/candidates/new') {
             return routing(
-                const Expanded(child: CandidateBasicInfo()), settings.name);
+                const Expanded(child: CandidateInfo()), settings.name);
           }
         } else if (settings.name == '/schedule') {
           ref.read(selectedMenuProvider.notifier).state = 2;

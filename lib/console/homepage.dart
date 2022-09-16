@@ -1,6 +1,6 @@
 import 'package:enhance_stepper/enhance_stepper.dart';
 import 'package:flutter/material.dart';
-import 'package:milkyway/colors.dart';
+import 'package:milkyway/settings.dart';
 
 class Homepage extends StatelessWidget {
   const Homepage({Key? key}) : super(key: key);
@@ -57,7 +57,7 @@ class Homepage extends StatelessWidget {
                     steps: [
                       EnhanceStep(
                         icon: const Icon(Icons.check_circle_outline,
-                            color: primaryButton, size: 30),
+                            color: primaryButtonColor, size: 30),
                         title: Row(
                           children: [
                             Column(
@@ -77,7 +77,7 @@ class Homepage extends StatelessWidget {
                       ),
                       EnhanceStep(
                           icon: const Icon(Icons.person,
-                              color: primaryButton, size: 30),
+                              color: primaryButtonColor, size: 30),
                           title: const Text(
                             "Add your first candidate",
                             style: heading2,

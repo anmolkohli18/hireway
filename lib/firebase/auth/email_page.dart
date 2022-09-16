@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:milkyway/colors.dart';
+import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/firebase/auth/password_page.dart';
 

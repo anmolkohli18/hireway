@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
 
-Future<FilePickerResult?> selectFile() async {
+Future<FilePickerResult?>? selectFile() async {
   FilePickerResult? result = await FilePicker.platform
       .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
 
@@ -24,15 +24,15 @@ Future<FilePickerResult?> selectFile() async {
   return null;
 }
 
-void uploadFile(String candidateName, String role,
-    FilePickerResult filePickerResult) async {
-  final storageRef = FirebaseStorage.instance.ref();
-  final String resumePath = 'client-name/$candidateName/resume.pdf';
-  final resumeRef = storageRef.child(resumePath);
-
+Future<String?> uploadFile(
+    String candidateName, FilePickerResult filePickerResult) async {
   Uint8List? fileBytes = filePickerResult.files.single.bytes;
   if (fileBytes != null) {
+    final storageRef = FirebaseStorage.instance.ref();
+    final String resumePath = 'client-name/$candidateName/resume.pdf';
+    final resumeRef = storageRef.child(resumePath);
     resumeRef.putData(fileBytes).then((uploadTask) => print(uploadTask.state));
+    return resumePath;
   }
-  addResumePath(candidateName, role, resumePath);
+  return null;
 }

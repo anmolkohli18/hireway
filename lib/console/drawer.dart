@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/colors.dart';
+import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/app_console.dart';
 
 class DrawerWidget extends ConsumerWidget {
