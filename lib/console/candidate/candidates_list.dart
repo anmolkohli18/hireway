@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
-import 'package:milkyway/console/candidate/candidates.dart';
 import 'package:milkyway/firebase/candidate/model.dart';
 import 'package:milkyway/settings.dart';
 
 class CandidatesList extends StatefulWidget {
-  const CandidatesList({Key? key, required this.candidatesStateCallback})
+  const CandidatesList(
+      {Key? key,
+      required this.candidatesStateCallback,
+      required this.showSuccessOverlay})
       : super(key: key);
 
   final ValueSetter<CandidatesState> candidatesStateCallback;
+  final bool showSuccessOverlay;
 
   @override
   State<CandidatesList> createState() => _CandidatesListState();
@@ -419,11 +422,12 @@ class _CandidatesListState extends State<CandidatesList>
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //   if (widget.newCandidateAdded) {
-    //     _showOverlay("Candidate is added successfully!");
-    //   }
-    // });
+    if (widget.showSuccessOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _showOverlay("Candidate is added successfully!");
+      });
+    }
+
     return listOfCandidates(context);
     //return emptyState(context);
   }

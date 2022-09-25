@@ -11,24 +11,32 @@ class Candidates extends StatefulWidget {
 }
 
 class _CandidatesState extends State<Candidates> {
+  CandidatesState _prevCandidatesState = CandidatesState.candidatesList;
   CandidatesState _candidatesState = CandidatesState.candidatesList;
 
   void setCandidatesState(CandidatesState newCandidatesState) {
-    print(_candidatesState);
     setState(() {
+      _prevCandidatesState = _candidatesState;
       _candidatesState = newCandidatesState;
     });
-    print(_candidatesState);
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Candidate state = $_candidatesState");
     switch (_candidatesState) {
       case CandidatesState.candidatesList:
-        return CandidatesList(
-          candidatesStateCallback: setCandidatesState,
-        );
+        if (_prevCandidatesState == CandidatesState.newCandidate) {
+          // TODO check if candidate was actually added
+          return CandidatesList(
+            candidatesStateCallback: setCandidatesState,
+            showSuccessOverlay: true,
+          );
+        } else {
+          return CandidatesList(
+            candidatesStateCallback: setCandidatesState,
+            showSuccessOverlay: false,
+          );
+        }
       case CandidatesState.newCandidate:
         return CandidateInfo(
           candidatesStateCallback: setCandidatesState,
