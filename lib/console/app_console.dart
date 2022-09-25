@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:milkyway/console/candidate/candidate_route_arguments.dart';
+import 'package:milkyway/console/candidate/candidates.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/candidate/candidate_info.dart';
 import 'package:milkyway/console/candidate/candidates_list.dart';
@@ -50,19 +52,29 @@ class AppConsole extends ConsumerWidget {
           colorScheme: const ColorScheme.light(
               background: primaryButtonColor, secondary: secondaryButtonColor)),
       initialRoute: isLoggedIn() ? '/login' : '/home',
+      routes: {
+        '/candidates': (context) {
+          return Scaffold(
+            body: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DrawerWidget(),
+                  const Expanded(child: Candidates())
+                ]),
+          );
+        }
+      },
       onGenerateRoute: (settings) {
         if (settings.name == '/home') {
           ref.read(selectedMenuProvider.notifier).state = 0;
           return routing(const Expanded(child: Homepage()), settings.name);
         } else if (settings.name!.startsWith('/candidates')) {
           ref.read(selectedMenuProvider.notifier).state = 1;
-          if (settings.name == '/candidates') {
-            return routing(
-                const Expanded(child: CandidatesList()), settings.name);
-          } else if (settings.name == '/candidates/new') {
-            return routing(
-                const Expanded(child: CandidateInfo()), settings.name);
-          }
+          // if (settings.name == '/candidates/new') {
+          //   return routing(
+          //       const Expanded(child: CandidateInfo()), settings.name);
+          // }
         } else if (settings.name == '/schedule') {
           ref.read(selectedMenuProvider.notifier).state = 2;
           return routing(const Expanded(child: SchedulesList()), settings.name);

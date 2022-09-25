@@ -1,17 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:milkyway/console/candidate/candidate_state.dart';
+import 'package:milkyway/console/candidate/candidates.dart';
 import 'package:milkyway/firebase/candidate/model.dart';
 import 'package:milkyway/settings.dart';
 
 class CandidatesList extends StatefulWidget {
-  const CandidatesList({Key? key}) : super(key: key);
+  const CandidatesList({Key? key, required this.candidatesStateCallback})
+      : super(key: key);
+
+  final ValueSetter<CandidatesState> candidatesStateCallback;
 
   @override
   State<CandidatesList> createState() => _CandidatesListState();
 }
 
-class _CandidatesListState extends State<CandidatesList> {
+class _CandidatesListState extends State<CandidatesList>
+    with SingleTickerProviderStateMixin {
   int highlightLinkIndex = -1;
-  String candidateType = "screening";
+  String interviewStage = "screening";
+
+  AnimationController? _animationController;
+  Animation<double>? _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _animation =
+        CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
+  }
 
   Widget listOfCandidates(BuildContext context) {
     return DefaultTabController(
@@ -25,12 +43,34 @@ class _CandidatesListState extends State<CandidatesList> {
               "Candidates",
               style: heading1,
             ),
-            const SizedBox(
-              height: 16,
-            ),
-            const Text(
-              "Manage your hiring pipeline",
-              style: subHeading,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Manage your hiring pipeline",
+                  style: subHeading,
+                ),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(200, 60),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        textStyle: const TextStyle(fontSize: 18),
+                        primary: primaryButtonColor,
+                        onPrimary: Colors.white),
+                    onPressed: () {
+                      print("Setting to newCandidate");
+                      widget.candidatesStateCallback(
+                          CandidatesState.newCandidate);
+                      //Navigator.pushNamed(context, '/candidates/new');
+                    },
+                    child: Row(
+                      children: const [
+                        Icon(Icons.add),
+                        Text("Add New Candidate"),
+                      ],
+                    ))
+              ],
             ),
             const SizedBox(
               height: 32,
@@ -40,22 +80,22 @@ class _CandidatesListState extends State<CandidatesList> {
                   switch (index) {
                     case 0:
                       setState(() {
-                        candidateType = "screening";
+                        interviewStage = "screening";
                       });
                       break;
                     case 1:
                       setState(() {
-                        candidateType = "ongoing";
+                        interviewStage = "ongoing";
                       });
                       break;
                     case 2:
                       setState(() {
-                        candidateType = "selected";
+                        interviewStage = "selected";
                       });
                       break;
                     case 3:
                       setState(() {
-                        candidateType = "rejected";
+                        interviewStage = "rejected";
                       });
                       break;
                   }
@@ -90,7 +130,7 @@ class _CandidatesListState extends State<CandidatesList> {
   }
 
   Widget candidatesListView() {
-    List<Candidate> candidates = getCandidates(candidateType);
+    List<Candidate> candidates = getCandidates(interviewStage);
     List<Widget> candidatesWidgetList = [];
     for (var index = 0; index < candidates.length; index++) {
       Candidate candidate = candidates[index];
@@ -102,7 +142,7 @@ class _CandidatesListState extends State<CandidatesList> {
           candidate.phone,
           candidate.resume,
           candidate.skills.split(","),
-          candidateType));
+          interviewStage));
       if (index != candidates.length - 1) {
         candidatesWidgetList.add(const SizedBox(
           height: 20,
@@ -153,7 +193,7 @@ class _CandidatesListState extends State<CandidatesList> {
       String phone,
       String resumeLink,
       List<String> skills,
-      String candidateType) {
+      String interviewStage) {
     // TODO get from firestore
     var skillsWidgets = <Widget>[];
     for (String skill in skills) {
@@ -199,7 +239,7 @@ class _CandidatesListState extends State<CandidatesList> {
                             fontWeight: FontWeight.w600,
                             fontSize: 20),
                   ),
-                  candidateStatusTile(candidateType),
+                  candidateStatusTile(interviewStage),
                 ],
               ),
               const SizedBox(
@@ -314,7 +354,7 @@ class _CandidatesListState extends State<CandidatesList> {
     return Container();
   }
 
-  List<Candidate> getCandidates(String candidateType) {
+  List<Candidate> getCandidates(String interviewStage) {
     List<Candidate> candidates = [];
     for (var index = 0; index < 10; index++) {
       candidates.add(const Candidate(
@@ -328,8 +368,62 @@ class _CandidatesListState extends State<CandidatesList> {
     return candidates;
   }
 
+  void _showOverlay(String successText) async {
+    OverlayState? overlayState = Overlay.of(context);
+    double screenWidth = MediaQuery.of(context).size.width;
+    OverlayEntry successOverlayEntry = OverlayEntry(
+        builder: (context) => Positioned(
+            left: screenWidth / 2,
+            top: 90,
+            child: FadeTransition(
+              opacity: _animation!,
+              child: Card(
+                child: Container(
+                  width: 300,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors
+                        .green.shade100, // Color.fromRGBO(165, 214, 167, 1)
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Icon(
+                          Icons.check_box,
+                          color: Colors.green.shade600,
+                        ),
+                        Text(
+                          successText,
+                          style: const TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w400),
+                        ),
+                        const Icon(
+                          Icons.close_outlined,
+                          size: 20,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )));
+    overlayState!.insert(successOverlayEntry);
+    _animationController!.forward();
+    await Future.delayed(const Duration(seconds: 3))
+        .whenComplete(() => _animationController!.reverse())
+        .whenComplete(() => successOverlayEntry.remove());
+  }
+
   @override
   Widget build(BuildContext context) {
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    //   if (widget.newCandidateAdded) {
+    //     _showOverlay("Candidate is added successfully!");
+    //   }
+    // });
     return listOfCandidates(context);
     //return emptyState(context);
   }

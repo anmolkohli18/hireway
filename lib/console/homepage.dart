@@ -89,7 +89,9 @@ class Homepage extends StatelessWidget {
                           content: Container(
                             alignment: Alignment.topLeft,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/candidates/new');
+                              },
                               child: const Text("Add Candidate"),
                             ),
                           )),

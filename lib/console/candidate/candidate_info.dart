@@ -1,119 +1,91 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:milkyway/console/candidate/candidate_route_arguments.dart';
+import 'package:milkyway/console/candidate/candidate_state.dart';
+import 'package:milkyway/console/candidate/candidates.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
 import 'package:milkyway/firebase/candidate/model.dart';
 import 'package:milkyway/firebase/storage/upload.dart';
 
 class CandidateInfo extends StatefulWidget {
-  const CandidateInfo({Key? key}) : super(key: key);
+  const CandidateInfo({Key? key, required this.candidatesStateCallback})
+      : super(key: key);
+
+  final ValueSetter<CandidatesState> candidatesStateCallback;
 
   @override
   State<StatefulWidget> createState() => _CandidateInfoState();
 }
 
-class _CandidateInfoState extends State<CandidateInfo>
-    with SingleTickerProviderStateMixin {
-  String _fullName = "";
-  String role = "";
-  FilePickerResult? _filePicked;
+class _CandidateInfoState extends State<CandidateInfo> {
+  String _name = "";
+  String _role = "";
+  String _email = "";
+  String _phone = "";
+  FilePickerResult? _localResumeFile;
+  String _skills = ""; // comma-separated
 
   final _formKey = GlobalKey<FormState>();
-  bool _isFormEnabled = false;
+  final _nameFieldKey = GlobalKey<FormFieldState>();
+  final _roleFieldKey = GlobalKey<FormFieldState>();
+  final _emailFieldKey = GlobalKey<FormFieldState>();
+  final _phoneFieldKey = GlobalKey<FormFieldState>();
+  final _skillsFieldKey = GlobalKey<FormFieldState>();
+  bool _isFormEnabled = true;
 
-  AnimationController? _animationController;
-  Animation<double>? _animation;
+  double _height = 680;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
-    _animation =
-        CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
+  void addCandidate() async {
+    addNewCandidate(
+            Candidate(
+                name: _name,
+                role: _role,
+                email: _email,
+                phone: _phone,
+                resume: 'client-name/$_name/resume.pdf',
+                skills: _skills),
+            _localResumeFile!)
+        .then((value) {
+      Navigator.pushNamed(context, '/candidates');
+    });
   }
 
   Future<void> validateForm() async {
-    if (_formKey.currentState!.validate() && _filePicked != null) {
-      _isFormEnabled = true;
-    } else {
-      _isFormEnabled = false;
+    if (_name.isNotEmpty &&
+        _role.isNotEmpty &&
+        _email.isNotEmpty &&
+        _phone.isNotEmpty &&
+        _localResumeFile != null &&
+        _skills.isNotEmpty) {
+      setState(() {
+        _isFormEnabled = true;
+      });
+    } else if (_isFormEnabled == true) {
+      setState(() {
+        _isFormEnabled = false;
+      });
     }
   }
 
-  void _showOverlay(String successText) async {
-    OverlayState? overlayState = Overlay.of(context);
-    double screenWidth = MediaQuery.of(context).size.width;
-    OverlayEntry successOverlayEntry = OverlayEntry(
-        builder: (context) => Positioned(
-            left: screenWidth / 2,
-            top: 100,
-            child: FadeTransition(
-              opacity: _animation!,
-              child: Card(
-                child: Container(
-                  width: 300,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors
-                        .green.shade100, // Color.fromRGBO(165, 214, 167, 1)
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(
-                          Icons.check_box,
-                          color: Colors.green.shade600,
-                        ),
-                        Text(
-                          successText,
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        const Icon(
-                          Icons.close_outlined,
-                          size: 20,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )));
-    overlayState!.insert(successOverlayEntry);
-    _animationController!.forward();
-    await Future.delayed(const Duration(seconds: 3))
-        .whenComplete(() => _animationController!.reverse())
-        .whenComplete(() => successOverlayEntry.remove());
-  }
-
-  Future<void> addCandidate() async {
-    uploadFile(_fullName, _filePicked!).then((resumePath) {
-      if (resumePath != null) {
-        addNewCandidate(
-            // TODO
-            Candidate(
-                name: _fullName,
-                email: "",
-                phone: "",
-                role: role,
-                resume: resumePath,
-                skills: ""));
-      }
-    }).onError((error, stackTrace) {
-      print("Could not upload the file");
-    });
+  void validateFormField(GlobalKey<FormFieldState> textFormFieldKey) {
+    if (textFormFieldKey.currentState!.validate()) {
+      validateForm();
+    } else {
+      validateForm();
+      setState(() {
+        _height = _height + 18.5;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 600,
-        height: 530,
+        width: 800,
+        height: _height,
         padding: const EdgeInsets.all(40),
         decoration: const BoxDecoration(
             color: Colors.white,
@@ -140,21 +112,22 @@ class _CandidateInfoState extends State<CandidateInfo>
               Padding(
                 padding: const EdgeInsets.only(bottom: 30.0),
                 child: TextFormField(
+                  key: _nameFieldKey,
                   autofocus: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a candidate\'s name';
+                      return 'Please enter candidate\'s name';
                     }
                     return null;
                   },
                   onChanged: (text) {
                     setState(() {
-                      _fullName = text;
+                      _name = text;
                     });
-                    validateForm();
+                    validateFormField(_nameFieldKey);
                   },
                   decoration:
-                      const InputDecoration(hintText: "Name of the candidate"),
+                      const InputDecoration(hintText: "John David Marcus"),
                 ),
               ),
               const Padding(
@@ -167,6 +140,7 @@ class _CandidateInfoState extends State<CandidateInfo>
               Padding(
                 padding: const EdgeInsets.only(bottom: 30.0),
                 child: TextFormField(
+                  key: _roleFieldKey,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an open role';
@@ -175,62 +149,134 @@ class _CandidateInfoState extends State<CandidateInfo>
                   },
                   onChanged: (text) {
                     setState(() {
-                      role = text;
+                      _role = text;
                     });
+                    validateFormField(_roleFieldKey);
                   },
                   decoration:
-                      const InputDecoration(hintText: "Role for the candidate"),
+                      const InputDecoration(hintText: "Software Engineer"),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 10.0),
-                child: Text(
-                  "Resume *",
-                  style: heading3,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30.0),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              primary: formDefaultColor,
-                              side: BorderSide(color: formDefaultColor)),
-                          onPressed: () async {
-                            var selectedFile = await selectFile();
-                            if (selectedFile != null) {
-                              setState(() {
-                                _filePicked = selectedFile;
-                              });
-                            }
-                            validateForm();
-                          },
-                          child: const Text("Upload from computer")),
-                    ),
-                    _filePicked != null
-                        ? Text(
-                            _filePicked!.files.single.name.replaceRange(40,
-                                _filePicked!.files.single.name.length, "..."),
-                            style: subHeading,
-                          )
-                        : const Text(
-                            "File should be below 5 MB",
-                            style: subHeading,
+              parallelEmailPhoneFields(
+                  firstWidgetHeading: "Email *",
+                  firstErrorMessage: 'Please enter candidate\'s email',
+                  firstHintMessage: "john.marcus@gmail.com",
+                  secondWidgetHeading: "Phone *",
+                  secondErrorMessage: 'Please enter candidate\'s phone number',
+                  secondHintMessage: '+1 2222 2222'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    width: 350,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 10.0),
+                          child: Text(
+                            "Resume *",
+                            style: heading3,
                           ),
-                  ],
-                ),
+                        ),
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(250, 50),
+                                      primary: formDefaultColor,
+                                      side:
+                                          BorderSide(color: formDefaultColor)),
+                                  onPressed: () async {
+                                    var selectedFile = await selectFile();
+                                    if (selectedFile != null) {
+                                      setState(() {
+                                        _localResumeFile = selectedFile;
+                                      });
+                                    }
+                                    validateForm();
+                                  },
+                                  child: const Text("Upload from computer")),
+                            ),
+                            _localResumeFile != null
+                                ? Text(
+                                    _localResumeFile!.files.single.name.length >
+                                            40
+                                        ? _localResumeFile!.files.single.name
+                                            .replaceRange(
+                                                40,
+                                                null,
+                                                // _localResumeFile!
+                                                //     .files.single.name.length,
+                                                "...")
+                                        : _localResumeFile!.files.single.name,
+                                    style: subHeading,
+                                  )
+                                : const Text(
+                                    "File should be below 5 MB",
+                                    style: subHeading,
+                                  ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 350,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 10.0),
+                            child: Text(
+                              "Skills *",
+                              style: heading3,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 30.0),
+                            child: TextFormField(
+                              key: _skillsFieldKey,
+                              autofocus: false,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter candidate\'s skills (comma-separated)';
+                                }
+                                return null;
+                              },
+                              onChanged: (text) {
+                                setState(() {
+                                  _skills = text;
+                                });
+                                validateFormField(_skillsFieldKey);
+                              },
+                              decoration: const InputDecoration(
+                                  hintText: "C++,Java,Flutter"),
+                            ),
+                          ),
+                        ]),
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 30,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
                     height: 40,
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(
-                        onPressed: _isFormEnabled ? addCandidate : null,
+                        onPressed: () {
+                          print("Setting to candidates list");
+                          widget.candidatesStateCallback(
+                              CandidatesState.candidatesList);
+                          //Navigator.pushNamed(context, '/candidates');
+                        }, //_isFormEnabled ? addCandidate : null,
                         child: const Text(
                           "Add this candidate",
                         )),
@@ -243,7 +289,7 @@ class _CandidateInfoState extends State<CandidateInfo>
                                       borderRadius:
                                           BorderRadius.circular(18)))),
                       onPressed: () {
-                        _showOverlay("Candidate is added successfully!");
+                        Navigator.pop(context);
                       },
                       child: const Text("Never mind"))
                 ],
@@ -252,6 +298,99 @@ class _CandidateInfoState extends State<CandidateInfo>
           ),
         ),
       ),
+    );
+  }
+
+  Widget parallelEmailPhoneFields(
+      {required String firstWidgetHeading,
+      required String firstHintMessage,
+      required String firstErrorMessage,
+      required String secondWidgetHeading,
+      required String secondHintMessage,
+      required String secondErrorMessage}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 350,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Text(
+                  firstWidgetHeading,
+                  style: heading3,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: Focus(
+                  onFocusChange: (focused) {
+                    if (!focused) {
+                      validateFormField(_emailFieldKey);
+                    }
+                  },
+                  child: TextFormField(
+                    key: _emailFieldKey,
+                    autofocus: false,
+                    validator: (value) {
+                      RegExp emailRegex = RegExp(
+                          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+                      if (value == null || value.isEmpty) {
+                        return firstErrorMessage;
+                      } else if (!emailRegex.hasMatch(_email)) {
+                        return "Please enter a valid email address";
+                      }
+                      return null;
+                    },
+                    onChanged: (text) {
+                      setState(() {
+                        _email = text;
+                      });
+                    },
+                    decoration: InputDecoration(hintText: firstHintMessage),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 350,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Text(
+                  secondWidgetHeading,
+                  style: heading3,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: IntlPhoneField(
+                  key: _phoneFieldKey,
+                  decoration: const InputDecoration(
+                    hintText: '2222 2222',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(),
+                    ),
+                  ),
+                  initialCountryCode: 'IN',
+                  onChanged: (phone) {
+                    setState(() {
+                      _phone = phone.completeNumber;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        )
+      ],
     );
   }
 }

@@ -20,16 +20,16 @@ Color formDefaultColor = Colors.grey.shade700;
 const Color lightTextAndBorderColor = Color(0XFFD0D4EA);
 
 const TextStyle heading1 =
-    TextStyle(color: primaryColor, fontSize: 32, fontWeight: FontWeight.bold);
+    TextStyle(color: primaryColor, fontSize: 28, fontWeight: FontWeight.bold);
 const TextStyle heading2 =
-    TextStyle(color: primaryColor, fontSize: 20, fontWeight: FontWeight.bold);
+    TextStyle(color: primaryColor, fontSize: 18, fontWeight: FontWeight.bold);
 const TextStyle heading3 =
     TextStyle(color: primaryColor, fontSize: 14, fontWeight: FontWeight.bold);
 
 const TextStyle secondaryTextStyle =
     TextStyle(color: secondaryColor, fontSize: 16);
 
-const TextStyle subHeading = TextStyle(color: primaryColor, fontSize: 18);
+const TextStyle subHeading = TextStyle(color: primaryColor, fontSize: 14);
 
 const TextStyle disabledHeading2 = TextStyle(
     color: lightHeadingColor, fontSize: 18, fontWeight: FontWeight.bold);
