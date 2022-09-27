@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:milkyway/firebase/candidate/model.dart';
+import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 
-final candidate = candidates.where("owner", isEqualTo: "anmol");
+final candidate = candidatesFirestore.where("owner", isEqualTo: "anmol");
 
 class CandidatesStore extends StatelessWidget {
   const CandidatesStore({Key? key}) : super(key: key);

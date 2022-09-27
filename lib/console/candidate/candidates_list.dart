@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
-import 'package:milkyway/firebase/candidate/model.dart';
+import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 import 'package:milkyway/settings.dart';
 
 class CandidatesList extends StatefulWidget {

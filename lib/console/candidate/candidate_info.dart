@@ -1,13 +1,12 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:milkyway/console/candidate/candidate_route_arguments.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
-import 'package:milkyway/console/candidate/candidates.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
-import 'package:milkyway/firebase/candidate/model.dart';
+import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 import 'package:milkyway/firebase/storage/upload.dart';
+import 'package:intl/intl.dart';
 
 class CandidateInfo extends StatefulWidget {
   const CandidateInfo({Key? key, required this.candidatesStateCallback})
@@ -38,6 +37,9 @@ class _CandidateInfoState extends State<CandidateInfo> {
   double _height = 680;
 
   void addCandidate() async {
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    String now = dateFormat.format(DateTime.now());
+
     addNewCandidate(
             Candidate(
                 name: _name,
@@ -45,7 +47,8 @@ class _CandidateInfoState extends State<CandidateInfo> {
                 email: _email,
                 phone: _phone,
                 resume: 'client-name/$_name/resume.pdf',
-                skills: _skills),
+                skills: _skills,
+                addedOnDateTime: now),
             _localResumeFile!)
         .then((value) {
       Navigator.pushNamed(context, '/candidates');
@@ -272,10 +275,8 @@ class _CandidateInfoState extends State<CandidateInfo> {
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(
                         onPressed: () {
-                          print("Setting to candidates list");
                           widget.candidatesStateCallback(
                               CandidatesState.candidatesList);
-                          //Navigator.pushNamed(context, '/candidates');
                         }, //_isFormEnabled ? addCandidate : null,
                         child: const Text(
                           "Add this candidate",

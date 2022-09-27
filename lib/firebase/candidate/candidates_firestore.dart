@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final candidates = FirebaseFirestore.instance
+final candidatesFirestore = FirebaseFirestore.instance
     .collection("clients")
     .doc("client-name")
     .collection("candidates")
@@ -18,6 +18,7 @@ class Candidate {
     required this.email,
     required this.phone,
     required this.skills,
+    required this.addedOnDateTime,
   });
 
   final String name;
@@ -26,6 +27,7 @@ class Candidate {
   final String email;
   final String phone;
   final String skills;
+  final String addedOnDateTime;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
@@ -35,6 +37,7 @@ class Candidate {
           email: json['email']! as String,
           phone: json['phone']! as String,
           skills: json['skills']! as String,
+          addedOnDateTime: json['addedOnDateTime']! as String,
         );
 
   Map<String, Object?> toJson() {
@@ -45,6 +48,7 @@ class Candidate {
       'email': email,
       'phone': phone,
       'skills': skills,
+      'addedOnDateTime': addedOnDateTime,
     };
   }
 }
