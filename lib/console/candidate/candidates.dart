@@ -25,18 +25,12 @@ class _CandidatesState extends State<Candidates> {
   Widget build(BuildContext context) {
     switch (_candidatesState) {
       case CandidatesState.candidatesList:
-        if (_prevCandidatesState == CandidatesState.newCandidate) {
-          // TODO check if candidate was actually added
-          return CandidatesList(
-            candidatesStateCallback: setCandidatesState,
-            showSuccessOverlay: true,
-          );
-        } else {
-          return CandidatesList(
-            candidatesStateCallback: setCandidatesState,
-            showSuccessOverlay: false,
-          );
-        }
+        // TODO check if candidate was actually added
+        return CandidatesList(
+          candidatesStateCallback: setCandidatesState,
+          showSuccessOverlay:
+              _prevCandidatesState == CandidatesState.newCandidate,
+        );
       case CandidatesState.newCandidate:
         return CandidateInfo(
           candidatesStateCallback: setCandidatesState,

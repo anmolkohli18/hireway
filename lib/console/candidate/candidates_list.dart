@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
 import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
+import 'package:milkyway/firebase/candidate/rounds_firestore.dart';
 import 'package:milkyway/settings.dart';
 
 class CandidatesList extends StatefulWidget {
@@ -32,6 +34,12 @@ class _CandidatesListState extends State<CandidatesList>
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
+
+    if (widget.showSuccessOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _showOverlay("Candidate is added successfully!");
+      });
+    }
   }
 
   Widget listOfCandidates(BuildContext context) {
@@ -125,7 +133,7 @@ class _CandidatesListState extends State<CandidatesList>
             const SizedBox(
               height: 16,
             ),
-            Expanded(child: candidatesListView())
+            candidatesListView()
           ],
         ),
       ),
@@ -133,29 +141,57 @@ class _CandidatesListState extends State<CandidatesList>
   }
 
   Widget candidatesListView() {
-    List<Candidate> candidates = getCandidates(interviewStage);
-    List<Widget> candidatesWidgetList = [];
-    for (var index = 0; index < candidates.length; index++) {
-      Candidate candidate = candidates[index];
-      candidatesWidgetList.add(candidateTile(
-          index,
-          candidate.name,
-          candidate.role,
-          candidate.email,
-          candidate.phone,
-          candidate.resume,
-          candidate.skills.split(","),
-          interviewStage));
-      if (index != candidates.length - 1) {
-        candidatesWidgetList.add(const SizedBox(
-          height: 20,
-        ));
-      }
-    }
+    return StreamBuilder<QuerySnapshot<Candidate>>(
+        stream: candidatesFirestore
+            .orderBy('addedOnDateTime', descending: true)
+            .limit(10)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
 
-    return ListView(
-      children: candidatesWidgetList,
-    );
+          if (!snapshot.hasData) {
+            return const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Colors.black45,
+                ),
+              ),
+            );
+          }
+
+          final candidates = snapshot.requireData.docs;
+          List<Widget> candidatesWidgetList = [];
+          for (var index = 0; index < candidates.length; index++) {
+            Candidate candidate = candidates[index].data();
+            if (candidate.interviewStage == interviewStage) {
+              candidatesWidgetList.add(candidateTile(
+                  index,
+                  candidate.name,
+                  candidate.role,
+                  candidate.email,
+                  candidate.phone,
+                  candidate.resume,
+                  candidate.skills.split(","),
+                  interviewStage));
+              if (index != candidates.length - 1) {
+                candidatesWidgetList.add(const SizedBox(
+                  height: 20,
+                ));
+              }
+            }
+          }
+
+          // print(
+          //     "Data size = ${data.size} ${data.docs.length} ${data.docs[0].data().name}");
+          return Expanded(
+              child: ListView(
+            children: candidatesWidgetList,
+          ));
+        });
   }
 
   Widget emptyState(BuildContext context) {
@@ -199,9 +235,13 @@ class _CandidatesListState extends State<CandidatesList>
       String interviewStage) {
     // TODO get from firestore
     var skillsWidgets = <Widget>[];
-    for (String skill in skills) {
+    for (int index = 0; index < skills.length && index < 5; index++) {
+      skillsWidgets.add(
+          highlightedTag(skills[index], Colors.black, Colors.grey.shade300));
+    }
+    if (skills.length > 5) {
       skillsWidgets
-          .add(highlightedTag(skill, Colors.black, Colors.grey.shade300));
+          .add(highlightedTag("more", Colors.black, Colors.grey.shade300));
     }
 
     return InkWell(
@@ -242,6 +282,7 @@ class _CandidatesListState extends State<CandidatesList>
                             fontWeight: FontWeight.w600,
                             fontSize: 20),
                   ),
+                  latestReviewAndRating(),
                   candidateStatusTile(interviewStage),
                 ],
               ),
@@ -325,7 +366,6 @@ class _CandidatesListState extends State<CandidatesList>
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: Container(
-        width: 100,
         height: 30,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -357,18 +397,25 @@ class _CandidatesListState extends State<CandidatesList>
     return Container();
   }
 
-  List<Candidate> getCandidates(String interviewStage) {
-    List<Candidate> candidates = [];
-    for (var index = 0; index < 10; index++) {
-      candidates.add(const Candidate(
-          name: "Anmol Kohli",
-          role: "Software Engineer",
-          email: "anmol@hireway.com",
-          phone: "+91-9741605152",
-          skills: "C++,Java,Flutter",
-          resume: "resume.pdf"));
-    }
-    return candidates;
+  Widget latestReviewAndRating() {
+    print("inside latest review and rating function");
+    final roundsFirestoreInstance = roundsFirestore("mifi.kohli@gmail.com");
+    return StreamBuilder<QuerySnapshot<Round>>(
+        stream:
+            roundsFirestoreInstance.orderBy("scheduledOn").limit(1).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text(snapshot.error.toString());
+          }
+
+          if (!snapshot.hasData) {
+            return const Text("No summary yet!");
+          }
+
+          Round round = snapshot.requireData.docs[0].data();
+          print("Round summary = ${round.summary}");
+          return Text(round.summary);
+        });
   }
 
   void _showOverlay(String successText) async {
@@ -422,12 +469,6 @@ class _CandidatesListState extends State<CandidatesList>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.showSuccessOverlay) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        _showOverlay("Candidate is added successfully!");
-      });
-    }
-
     return listOfCandidates(context);
     //return emptyState(context);
   }

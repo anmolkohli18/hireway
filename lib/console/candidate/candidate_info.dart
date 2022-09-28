@@ -32,11 +32,11 @@ class _CandidateInfoState extends State<CandidateInfo> {
   final _emailFieldKey = GlobalKey<FormFieldState>();
   final _phoneFieldKey = GlobalKey<FormFieldState>();
   final _skillsFieldKey = GlobalKey<FormFieldState>();
-  bool _isFormEnabled = true;
+  bool _isFormEnabled = false;
 
   double _height = 680;
 
-  void addCandidate() async {
+  Future<void> addCandidate() async {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());
 
@@ -48,7 +48,8 @@ class _CandidateInfoState extends State<CandidateInfo> {
                 phone: _phone,
                 resume: 'client-name/$_name/resume.pdf',
                 skills: _skills,
-                addedOnDateTime: now),
+                addedOnDateTime: now,
+                interviewStage: "screening"),
             _localResumeFile!)
         .then((value) {
       Navigator.pushNamed(context, '/candidates');
@@ -274,10 +275,13 @@ class _CandidateInfoState extends State<CandidateInfo> {
                     height: 40,
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(
-                        onPressed: () {
-                          widget.candidatesStateCallback(
-                              CandidatesState.candidatesList);
-                        }, //_isFormEnabled ? addCandidate : null,
+                        onPressed: _isFormEnabled
+                            ? () async {
+                                await addCandidate();
+                                widget.candidatesStateCallback(
+                                    CandidatesState.candidatesList);
+                              }
+                            : null,
                         child: const Text(
                           "Add this candidate",
                         )),

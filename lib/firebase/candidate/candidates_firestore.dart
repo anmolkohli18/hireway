@@ -7,7 +7,7 @@ final candidatesFirestore = FirebaseFirestore.instance
     .collection("candidates")
     .withConverter(
         fromFirestore: (snapshots, _) => Candidate.fromJson(snapshots.data()!),
-        toFirestore: (account, _) => account.toJson());
+        toFirestore: (candidate, _) => candidate.toJson());
 
 @immutable
 class Candidate {
@@ -19,6 +19,7 @@ class Candidate {
     required this.phone,
     required this.skills,
     required this.addedOnDateTime,
+    required this.interviewStage,
   });
 
   final String name;
@@ -28,6 +29,7 @@ class Candidate {
   final String phone;
   final String skills;
   final String addedOnDateTime;
+  final String interviewStage;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
@@ -38,6 +40,7 @@ class Candidate {
           phone: json['phone']! as String,
           skills: json['skills']! as String,
           addedOnDateTime: json['addedOnDateTime']! as String,
+          interviewStage: json['interviewStage']! as String,
         );
 
   Map<String, Object?> toJson() {
@@ -49,6 +52,7 @@ class Candidate {
       'phone': phone,
       'skills': skills,
       'addedOnDateTime': addedOnDateTime,
+      'interviewStage': interviewStage,
     };
   }
 }
