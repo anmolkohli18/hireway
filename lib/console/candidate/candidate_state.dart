@@ -1,1 +1,1 @@
-enum CandidatesState { candidatesList, newCandidate }
+enum CandidatesState { candidatesList, newCandidateAdded }

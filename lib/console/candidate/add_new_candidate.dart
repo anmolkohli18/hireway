@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
@@ -8,17 +10,14 @@ import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 import 'package:milkyway/firebase/storage/upload.dart';
 import 'package:intl/intl.dart';
 
-class CandidateInfo extends StatefulWidget {
-  const CandidateInfo({Key? key, required this.candidatesStateCallback})
-      : super(key: key);
-
-  final ValueSetter<CandidatesState> candidatesStateCallback;
+class AddNewCandidate extends ConsumerStatefulWidget {
+  const AddNewCandidate({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _CandidateInfoState();
+  ConsumerState<AddNewCandidate> createState() => _AddNewCandidateState();
 }
 
-class _CandidateInfoState extends State<CandidateInfo> {
+class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
   String _name = "";
   String _role = "";
   String _email = "";
@@ -32,7 +31,7 @@ class _CandidateInfoState extends State<CandidateInfo> {
   final _emailFieldKey = GlobalKey<FormFieldState>();
   final _phoneFieldKey = GlobalKey<FormFieldState>();
   final _skillsFieldKey = GlobalKey<FormFieldState>();
-  bool _isFormEnabled = false;
+  bool _isFormEnabled = true;
 
   double _height = 680;
 
@@ -276,10 +275,12 @@ class _CandidateInfoState extends State<CandidateInfo> {
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(
                         onPressed: _isFormEnabled
-                            ? () async {
-                                await addCandidate();
-                                widget.candidatesStateCallback(
-                                    CandidatesState.candidatesList);
+                            ? () {
+                                //await addCandidate();
+                                ref
+                                    .read(candidatesStateProvider.notifier)
+                                    .state = CandidatesState.newCandidateAdded;
+                                Navigator.pushNamed(context, '/candidates');
                               }
                             : null,
                         child: const Text(
@@ -294,7 +295,7 @@ class _CandidateInfoState extends State<CandidateInfo> {
                                       borderRadius:
                                           BorderRadius.circular(18)))),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/candidates');
                       },
                       child: const Text("Never mind"))
                 ],

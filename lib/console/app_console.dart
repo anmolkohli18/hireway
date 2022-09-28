@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/candidate/candidate_route_arguments.dart';
-import 'package:milkyway/console/candidate/candidates.dart';
-import 'package:milkyway/settings.dart';
-import 'package:milkyway/console/candidate/candidate_info.dart';
+import 'package:milkyway/console/candidate/add_new_candidate.dart';
+import 'package:milkyway/console/candidate/candidate_state.dart';
 import 'package:milkyway/console/candidate/candidates_list.dart';
+import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
-import 'package:milkyway/console/drawer.dart';
 import 'package:milkyway/console/routes/routing.dart';
 import 'package:milkyway/console/schedule.dart';
 import 'package:milkyway/firebase/auth/email_page.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 
 final selectedMenuProvider = StateProvider((ref) => 0);
+final candidatesStateProvider =
+    StateProvider((ref) => CandidatesState.candidatesList);
 
 class AppConsole extends ConsumerWidget {
   const AppConsole({Key? key}) : super(key: key);
@@ -37,7 +37,7 @@ class AppConsole extends ConsumerWidget {
           outlinedButtonTheme: OutlinedButtonThemeData(
               style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 40),
-                  primary: primaryButtonColor,
+                  backgroundColor: primaryButtonColor,
                   side: const BorderSide(color: primaryButtonColor))),
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
@@ -45,36 +45,26 @@ class AppConsole extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18)),
                   textStyle: const TextStyle(fontSize: 14),
-                  primary: primaryButtonColor,
-                  onPrimary: Colors.white)),
+                  backgroundColor: primaryButtonColor,
+                  foregroundColor: Colors.white)),
           primarySwatch: primaryConsoleColor,
           scaffoldBackgroundColor: const Color(0xFFF4F6F7),
           colorScheme: const ColorScheme.light(
               background: primaryButtonColor, secondary: secondaryButtonColor)),
       initialRoute: isLoggedIn() ? '/login' : '/home',
-      routes: {
-        '/candidates': (context) {
-          return Scaffold(
-            body: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  DrawerWidget(),
-                  const Expanded(child: Candidates())
-                ]),
-          );
-        }
-      },
       onGenerateRoute: (settings) {
         if (settings.name == '/home') {
           ref.read(selectedMenuProvider.notifier).state = 0;
           return routing(const Expanded(child: Homepage()), settings.name);
         } else if (settings.name!.startsWith('/candidates')) {
           ref.read(selectedMenuProvider.notifier).state = 1;
-          // if (settings.name == '/candidates/new') {
-          //   return routing(
-          //       const Expanded(child: CandidateInfo()), settings.name);
-          // }
+          if (settings.name == '/candidates') {
+            return routing(
+                const Expanded(child: CandidatesList()), settings.name);
+          } else if (settings.name == '/candidates/new') {
+            return routing(
+                const Expanded(child: AddNewCandidate()), settings.name);
+          }
         } else if (settings.name == '/schedule') {
           ref.read(selectedMenuProvider.notifier).state = 2;
           return routing(const Expanded(child: SchedulesList()), settings.name);

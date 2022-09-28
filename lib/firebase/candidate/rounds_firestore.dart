@@ -16,31 +16,31 @@ CollectionReference<Round> roundsFirestore(String email) =>
 class Round {
   const Round({
     required this.scheduledOn,
-    required this.interviewers,
+    required this.interviewer,
     required this.notes,
     required this.rating,
     required this.summary,
   });
 
   final String scheduledOn;
-  final String interviewers;
+  final String interviewer;
   final String notes;
-  final String rating;
+  final int rating;
   final String summary;
 
   Round.fromJson(Map<String, Object?> json)
       : this(
           scheduledOn: json['scheduledOn']! as String,
-          interviewers: json['interviewers']! as String,
+          interviewer: json['interviewer']! as String,
           notes: json['notes']! as String,
-          rating: json['rating']! as String,
+          rating: json['rating']! as int,
           summary: json['summary']! as String,
         );
 
   Map<String, Object?> toJson() {
     return {
       'scheduledOn': scheduledOn,
-      'interviewers': interviewers,
+      'interviewer': interviewer,
       'notes': notes,
       'rating': rating,
       'summary': summary,

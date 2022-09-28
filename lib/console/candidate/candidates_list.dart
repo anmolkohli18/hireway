@@ -1,25 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/candidate/candidate_state.dart';
 import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 import 'package:milkyway/firebase/candidate/rounds_firestore.dart';
 import 'package:milkyway/settings.dart';
 
-class CandidatesList extends StatefulWidget {
-  const CandidatesList(
-      {Key? key,
-      required this.candidatesStateCallback,
-      required this.showSuccessOverlay})
-      : super(key: key);
-
-  final ValueSetter<CandidatesState> candidatesStateCallback;
-  final bool showSuccessOverlay;
+class CandidatesList extends ConsumerStatefulWidget {
+  const CandidatesList({
+    Key? key,
+  }) : super(key: key);
 
   @override
-  State<CandidatesList> createState() => _CandidatesListState();
+  ConsumerState<CandidatesList> createState() => _CandidatesListState();
 }
 
-class _CandidatesListState extends State<CandidatesList>
+class _CandidatesListState extends ConsumerState<CandidatesList>
     with SingleTickerProviderStateMixin {
   int highlightLinkIndex = -1;
   String interviewStage = "screening";
@@ -35,109 +32,127 @@ class _CandidatesListState extends State<CandidatesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    if (widget.showSuccessOverlay) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        _showOverlay("Candidate is added successfully!");
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _showOverlay("Candidate is added successfully!");
+    });
   }
 
   Widget listOfCandidates(BuildContext context) {
-    return DefaultTabController(
-      length: 4,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Candidates",
-              style: heading1,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Manage your hiring pipeline",
-                  style: subHeading,
+    return StreamBuilder<QuerySnapshot<Candidate>>(
+        stream: candidatesFirestore
+            .orderBy('addedOnDateTime', descending: true)
+            .limit(10)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Colors.black45,
                 ),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(200, 60),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        textStyle: const TextStyle(fontSize: 18),
-                        primary: primaryButtonColor,
-                        onPrimary: Colors.white),
-                    onPressed: () {
-                      print("Setting to newCandidate");
-                      widget.candidatesStateCallback(
-                          CandidatesState.newCandidate);
-                      //Navigator.pushNamed(context, '/candidates/new');
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.add),
-                        Text("Add New Candidate"),
-                      ],
-                    ))
-              ],
+              ),
+            );
+          }
+
+          return DefaultTabController(
+            length: 4,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Candidates",
+                    style: heading1,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Manage your hiring pipeline",
+                        style: subHeading,
+                      ),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(200, 60),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              textStyle: const TextStyle(fontSize: 18),
+                              backgroundColor: primaryButtonColor,
+                              foregroundColor: Colors.white),
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/candidates/new');
+                          },
+                          child: Row(
+                            children: const [
+                              Icon(Icons.add),
+                              Text("Add New Candidate"),
+                            ],
+                          ))
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  TabBar(
+                      onTap: (index) {
+                        switch (index) {
+                          case 0:
+                            setState(() {
+                              interviewStage = "screening";
+                            });
+                            break;
+                          case 1:
+                            setState(() {
+                              interviewStage = "ongoing";
+                            });
+                            break;
+                          case 2:
+                            setState(() {
+                              interviewStage = "selected";
+                            });
+                            break;
+                          case 3:
+                            setState(() {
+                              interviewStage = "rejected";
+                            });
+                            break;
+                        }
+                      },
+                      labelColor: Colors.black,
+                      labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18),
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: Colors.black,
+                      tabs: const [
+                        Tab(
+                          text: "Screening",
+                        ),
+                        Tab(
+                          text: "Ongoing",
+                        ),
+                        Tab(
+                          text: "Selected",
+                        ),
+                        Tab(
+                          text: "Rejected",
+                        ),
+                      ]),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  candidatesListView()
+                ],
+              ),
             ),
-            const SizedBox(
-              height: 32,
-            ),
-            TabBar(
-                onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      setState(() {
-                        interviewStage = "screening";
-                      });
-                      break;
-                    case 1:
-                      setState(() {
-                        interviewStage = "ongoing";
-                      });
-                      break;
-                    case 2:
-                      setState(() {
-                        interviewStage = "selected";
-                      });
-                      break;
-                    case 3:
-                      setState(() {
-                        interviewStage = "rejected";
-                      });
-                      break;
-                  }
-                },
-                labelColor: Colors.black,
-                labelStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.black,
-                tabs: const [
-                  Tab(
-                    text: "Screening",
-                  ),
-                  Tab(
-                    text: "Ongoing",
-                  ),
-                  Tab(
-                    text: "Selected",
-                  ),
-                  Tab(
-                    text: "Rejected",
-                  ),
-                ]),
-            const SizedBox(
-              height: 16,
-            ),
-            candidatesListView()
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 
   Widget candidatesListView() {
@@ -195,32 +210,34 @@ class _CandidatesListState extends State<CandidatesList>
   }
 
   Widget emptyState(BuildContext context) {
-    return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 20.0),
-          child: Text(
-            "Add candidates to hireway now!",
-            style: heading2,
+    return Expanded(
+      child: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Padding(
+            padding: EdgeInsets.only(bottom: 20.0),
+            child: Text(
+              "Add candidates to hireway now!",
+              style: heading2,
+            ),
           ),
-        ),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 28.0),
-          child: Text(
-            "It takes only few seconds to add candidates and start interviewing.",
-            style: subHeading,
+          const Padding(
+            padding: EdgeInsets.only(bottom: 28.0),
+            child: Text(
+              "It takes only few seconds to add candidates and start interviewing.",
+              style: subHeading,
+            ),
           ),
-        ),
-        ElevatedButton(
-            style: ElevatedButton.styleFrom(minimumSize: const Size(200, 60)),
-            onPressed: () {
-              Navigator.pushNamed(context, '/candidates/new');
-            },
-            child: const Text(
-              "Add new candidate",
-              style: TextStyle(fontSize: 16),
-            ))
-      ]),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(minimumSize: const Size(200, 60)),
+              onPressed: () {
+                Navigator.pushNamed(context, '/candidates/new');
+              },
+              child: const Text(
+                "Add new candidate",
+                style: TextStyle(fontSize: 16),
+              ))
+        ]),
+      ),
     );
   }
 
@@ -266,67 +283,46 @@ class _CandidatesListState extends State<CandidatesList>
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: highlightLinkIndex == index
-                        ? const TextStyle(
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.black87,
-                            decorationThickness: 2,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20)
-                        : const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: highlightLinkIndex == index
+                            ? const TextStyle(
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.black87,
+                                decorationThickness: 2,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20)
+                            : const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20),
+                      ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      Text(
+                        role,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      // TODO get average ratings from firebase which is stored using cloud function
+                      ratings(4),
+                    ],
                   ),
-                  latestReviewAndRating(),
-                  candidateStatusTile(interviewStage),
+                  latestReviewAndRating(email),
                 ],
-              ),
-              const SizedBox(
-                height: 4,
-              ),
-              Text(
-                role,
-                style: const TextStyle(color: Colors.black, fontSize: 16),
               ),
               const SizedBox(
                 height: 8,
-              ),
-              Row(
-                children: const [
-                  Icon(
-                    Icons.star,
-                    color: Color(0XFFFDCC0D),
-                    size: 30,
-                  ),
-                  Icon(
-                    Icons.star,
-                    color: Color(0XFFFDCC0D),
-                    size: 30,
-                  ),
-                  Icon(
-                    Icons.star,
-                    color: Color(0XFFFDCC0D),
-                    size: 30,
-                  ),
-                  Icon(
-                    Icons.star,
-                    color: Color(0XFFFDCC0D),
-                    size: 30,
-                  ),
-                  Icon(
-                    Icons.star_border,
-                    color: Color(0XFFFDCC0D),
-                    size: 30,
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 18,
               ),
               Row(
                 children: [
@@ -380,26 +376,22 @@ class _CandidatesListState extends State<CandidatesList>
     );
   }
 
-  Widget candidateStatusTile(String candidateStatus) {
-    // TODO cover all statuses
-    switch (candidateStatus) {
-      case "screening":
-        return highlightedTag(
-            "Screening", Colors.white, Colors.orange.shade700);
-      case "ongoing":
-        return highlightedTag(
-            "In Progress", Colors.white, Colors.blue.shade700);
-      case "selected":
-        return highlightedTag("Selected", Colors.white, Colors.green.shade700);
-      case "rejected":
-        return highlightedTag("Rejected", Colors.white, Colors.red.shade700);
+  Widget ratings(int rating) {
+    List<Widget> ratingIcons = [];
+    for (int index = 0; index < 5; index++) {
+      ratingIcons.add(Icon(
+        index + 1 <= rating ? Icons.star : Icons.star_border,
+        color: const Color(0XFFFDCC0D),
+        size: 30,
+      ));
     }
-    return Container();
+    return Row(
+      children: ratingIcons,
+    );
   }
 
-  Widget latestReviewAndRating() {
-    print("inside latest review and rating function");
-    final roundsFirestoreInstance = roundsFirestore("mifi.kohli@gmail.com");
+  Widget latestReviewAndRating(String email) {
+    final roundsFirestoreInstance = roundsFirestore(email);
     return StreamBuilder<QuerySnapshot<Round>>(
         stream:
             roundsFirestoreInstance.orderBy("scheduledOn").limit(1).snapshots(),
@@ -408,17 +400,49 @@ class _CandidatesListState extends State<CandidatesList>
             return Text(snapshot.error.toString());
           }
 
-          if (!snapshot.hasData) {
-            return const Text("No summary yet!");
+          if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
+            return Container();
           }
 
           Round round = snapshot.requireData.docs[0].data();
-          print("Round summary = ${round.summary}");
-          return Text(round.summary);
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+                border: round.rating >= 4
+                    ? Border.all(color: Colors.green.shade300)
+                    : round.rating <= 2
+                        ? Border.all(color: Colors.red.shade300)
+                        : Border.all(color: Colors.black38)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ratings(round.rating),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  round.summary,
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                Text(
+                  round.interviewer,
+                  style: const TextStyle(
+                      color: Colors.black54, fontWeight: FontWeight.w400),
+                )
+              ],
+            ),
+          );
         });
   }
 
   void _showOverlay(String successText) async {
+    if (ref.watch(candidatesStateProvider.state).state !=
+        CandidatesState.newCandidateAdded) return;
+
     OverlayState? overlayState = Overlay.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
     OverlayEntry successOverlayEntry = OverlayEntry(
@@ -470,6 +494,5 @@ class _CandidatesListState extends State<CandidatesList>
   @override
   Widget build(BuildContext context) {
     return listOfCandidates(context);
-    //return emptyState(context);
   }
 }
