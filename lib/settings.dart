@@ -8,7 +8,7 @@ const Color secondaryColor = Color(0xff625b71);
 
 const Color successColor = Color(0xFF001C63);
 
-const Color lightHeadingColor = Color(0xFFABB2D9);
+const Color lightHeadingColor = Colors.black45;
 const Color highlightColor = Color.fromARGB(20, 34, 65, 205);
 
 const Color primaryButtonColor = Colors.black; //Color(0xFF2240CD);

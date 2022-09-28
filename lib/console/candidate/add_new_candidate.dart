@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/candidate/candidate_state.dart';
+import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/firebase/candidate/create.dart';
 import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
@@ -31,7 +31,7 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
   final _emailFieldKey = GlobalKey<FormFieldState>();
   final _phoneFieldKey = GlobalKey<FormFieldState>();
   final _skillsFieldKey = GlobalKey<FormFieldState>();
-  bool _isFormEnabled = true;
+  bool _isFormEnabled = false;
 
   double _height = 680;
 
@@ -276,11 +276,12 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
                     child: ElevatedButton(
                         onPressed: _isFormEnabled
                             ? () {
-                                //await addCandidate();
-                                ref
-                                    .read(candidatesStateProvider.notifier)
-                                    .state = CandidatesState.newCandidateAdded;
-                                Navigator.pushNamed(context, '/candidates');
+                                addCandidate().then((value) {
+                                  ref
+                                      .read(candidatesStateProvider.notifier)
+                                      .state = CandidatesState.newCandidateAdded;
+                                  Navigator.pushNamed(context, '/candidates');
+                                });
                               }
                             : null,
                         child: const Text(

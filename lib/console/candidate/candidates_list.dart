@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/candidate/candidate_state.dart';
+import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
 import 'package:milkyway/firebase/candidate/rounds_firestore.dart';
 import 'package:milkyway/settings.dart';
@@ -51,192 +51,192 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
           }
 
           if (!snapshot.hasData) {
-            return const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Colors.black45,
-                ),
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black45,
               ),
             );
           }
-
-          return DefaultTabController(
-            length: 4,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Candidates",
-                    style: heading1,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Manage your hiring pipeline",
-                        style: subHeading,
-                      ),
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(200, 60),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              textStyle: const TextStyle(fontSize: 18),
-                              backgroundColor: primaryButtonColor,
-                              foregroundColor: Colors.white),
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/candidates/new');
-                          },
-                          child: Row(
-                            children: const [
-                              Icon(Icons.add),
-                              Text("Add New Candidate"),
-                            ],
-                          ))
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  TabBar(
-                      onTap: (index) {
-                        switch (index) {
-                          case 0:
-                            setState(() {
-                              interviewStage = "screening";
-                            });
-                            break;
-                          case 1:
-                            setState(() {
-                              interviewStage = "ongoing";
-                            });
-                            break;
-                          case 2:
-                            setState(() {
-                              interviewStage = "selected";
-                            });
-                            break;
-                          case 3:
-                            setState(() {
-                              interviewStage = "rejected";
-                            });
-                            break;
-                        }
-                      },
-                      labelColor: Colors.black,
-                      labelStyle: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18),
-                      unselectedLabelColor: Colors.grey,
-                      indicatorColor: Colors.black,
-                      tabs: const [
-                        Tab(
-                          text: "Screening",
-                        ),
-                        Tab(
-                          text: "Ongoing",
-                        ),
-                        Tab(
-                          text: "Selected",
-                        ),
-                        Tab(
-                          text: "Rejected",
-                        ),
-                      ]),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  candidatesListView()
-                ],
-              ),
-            ),
-          );
+          final List<QueryDocumentSnapshot<Candidate>> candidates =
+              snapshot.requireData.docs;
+          if (candidates.isNotEmpty) {
+            return candidatesListView(candidates);
+          } else {
+            return emptyState(context);
+          }
         });
   }
 
-  Widget candidatesListView() {
-    return StreamBuilder<QuerySnapshot<Candidate>>(
-        stream: candidatesFirestore
-            .orderBy('addedOnDateTime', descending: true)
-            .limit(10)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Expanded(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Colors.black45,
-                ),
-              ),
-            );
-          }
-
-          final candidates = snapshot.requireData.docs;
-          List<Widget> candidatesWidgetList = [];
-          for (var index = 0; index < candidates.length; index++) {
-            Candidate candidate = candidates[index].data();
-            if (candidate.interviewStage == interviewStage) {
-              candidatesWidgetList.add(candidateTile(
-                  index,
-                  candidate.name,
-                  candidate.role,
-                  candidate.email,
-                  candidate.phone,
-                  candidate.resume,
-                  candidate.skills.split(","),
-                  interviewStage));
-              if (index != candidates.length - 1) {
-                candidatesWidgetList.add(const SizedBox(
-                  height: 20,
-                ));
-              }
-            }
-          }
-
-          // print(
-          //     "Data size = ${data.size} ${data.docs.length} ${data.docs[0].data().name}");
-          return Expanded(
-              child: ListView(
-            children: candidatesWidgetList,
+  Widget candidatesListView(List<QueryDocumentSnapshot<Candidate>> candidates) {
+    List<Widget> candidatesWidgetList = [];
+    for (var index = 0; index < candidates.length; index++) {
+      Candidate candidate = candidates[index].data();
+      if (candidate.interviewStage == interviewStage) {
+        candidatesWidgetList.add(candidateTile(
+            index,
+            candidate.name,
+            candidate.role,
+            candidate.email,
+            candidate.phone,
+            candidate.resume,
+            candidate.skills.split(","),
+            interviewStage));
+        if (index != candidates.length - 1) {
+          candidatesWidgetList.add(const SizedBox(
+            height: 20,
           ));
-        });
+        }
+      }
+    }
+
+    return DefaultTabController(
+      length: 4,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            header(),
+            const SizedBox(
+              height: 32,
+            ),
+            TabBar(
+                onTap: (index) {
+                  switch (index) {
+                    case 0:
+                      setState(() {
+                        interviewStage = "screening";
+                      });
+                      break;
+                    case 1:
+                      setState(() {
+                        interviewStage = "ongoing";
+                      });
+                      break;
+                    case 2:
+                      setState(() {
+                        interviewStage = "selected";
+                      });
+                      break;
+                    case 3:
+                      setState(() {
+                        interviewStage = "rejected";
+                      });
+                      break;
+                  }
+                },
+                labelColor: Colors.black,
+                labelStyle:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.black,
+                tabs: const [
+                  Tab(
+                    text: "Screening",
+                  ),
+                  Tab(
+                    text: "Ongoing",
+                  ),
+                  Tab(
+                    text: "Selected",
+                  ),
+                  Tab(
+                    text: "Rejected",
+                  ),
+                ]),
+            const SizedBox(
+              height: 16,
+            ),
+            Expanded(
+                child: ListView(
+              children: candidatesWidgetList,
+            ))
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget header() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              "Candidates",
+              style: heading1,
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            Text(
+              "Manage your hiring pipeline",
+              style: subHeading,
+            ),
+          ],
+        ),
+        ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                minimumSize: const Size(200, 60),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                textStyle: const TextStyle(fontSize: 18),
+                backgroundColor: primaryButtonColor,
+                foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pushNamed(context, '/candidates/new');
+            },
+            child: Row(
+              children: const [
+                Icon(Icons.add),
+                Text("Add New Candidate"),
+              ],
+            ))
+      ],
+    );
   }
 
   Widget emptyState(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 20.0),
-            child: Text(
-              "Add candidates to hireway now!",
-              style: heading2,
+    return Padding(
+      padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
+      child: Column(
+        children: [
+          header(),
+          Expanded(
+            child: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 20.0),
+                      child: Text(
+                        "Add candidates to hireway now!",
+                        style: heading2,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 28.0),
+                      child: Text(
+                        "It takes only few seconds to add candidates and start interviewing.",
+                        style: subHeading,
+                      ),
+                    ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(200, 60)),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/candidates/new');
+                        },
+                        child: const Text(
+                          "Add new candidate",
+                          style: TextStyle(fontSize: 16),
+                        ))
+                  ]),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(bottom: 28.0),
-            child: Text(
-              "It takes only few seconds to add candidates and start interviewing.",
-              style: subHeading,
-            ),
-          ),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: const Size(200, 60)),
-              onPressed: () {
-                Navigator.pushNamed(context, '/candidates/new');
-              },
-              child: const Text(
-                "Add new candidate",
-                style: TextStyle(fontSize: 16),
-              ))
-        ]),
+        ],
       ),
     );
   }
