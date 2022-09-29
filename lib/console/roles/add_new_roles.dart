@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/firebase/roles/roles_firestore.dart';
+import 'package:milkyway/firebase/roles_firestore.dart';
 import 'package:milkyway/settings.dart';
 import 'package:intl/intl.dart';
 

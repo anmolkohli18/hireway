@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/candidate/add_new_candidate.dart';
 import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/console/candidate/candidates_list.dart';
+import 'package:milkyway/console/interviewers/add_new_interviewer.dart';
+import 'package:milkyway/console/interviewers/interviewers_list.dart';
 import 'package:milkyway/console/roles/add_new_roles.dart';
+import 'package:milkyway/console/roles/roles_list.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
@@ -15,6 +18,8 @@ final selectedMenuProvider = StateProvider((ref) => 0);
 final candidatesStateProvider =
     StateProvider((ref) => CandidatesState.candidatesList);
 final rolesStateProvider = StateProvider((ref) => RolesState.rolesList);
+final interviewerStateProvider =
+    StateProvider((ref) => InterviewersState.interviewersList);
 
 class AppConsole extends ConsumerWidget {
   const AppConsole({Key? key}) : super(key: key);
@@ -74,10 +79,18 @@ class AppConsole extends ConsumerWidget {
         } else if (settings.name!.startsWith('/roles')) {
           ref.read(selectedMenuProvider.notifier).state = 3;
           if (settings.name == '/roles') {
-            return routing(
-                const Expanded(child: CandidatesList()), settings.name);
+            return routing(const Expanded(child: RolesList()), settings.name);
           } else if (settings.name == '/roles/new') {
             return routing(const Expanded(child: AddNewRole()), settings.name);
+          }
+        } else if (settings.name!.startsWith('/interviewers')) {
+          ref.read(selectedMenuProvider.notifier).state = 4;
+          if (settings.name == '/interviewers') {
+            return routing(
+                const Expanded(child: InterviewersList()), settings.name);
+          } else if (settings.name == '/interviewers/new') {
+            return routing(
+                const Expanded(child: AddNewInterviewer()), settings.name);
           }
         } else {
           // TODO change to login screen
