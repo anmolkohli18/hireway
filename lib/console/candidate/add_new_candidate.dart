@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,9 +6,8 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/settings.dart';
-import 'package:milkyway/firebase/candidate/create.dart';
-import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
-import 'package:milkyway/firebase/storage/upload.dart';
+import 'package:milkyway/firebase/candidates_firestore.dart';
+import 'package:milkyway/firebase/upload_storage.dart';
 import 'package:intl/intl.dart';
 
 class AddNewCandidate extends ConsumerStatefulWidget {
@@ -39,19 +39,26 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());
 
-    addNewCandidate(
-            Candidate(
-                name: _name,
-                role: _role,
-                email: _email,
-                phone: _phone,
-                resume: 'client-name/$_name/resume.pdf',
-                skills: _skills,
-                addedOnDateTime: now,
-                interviewStage: "screening"),
-            _localResumeFile!)
-        .then((value) {
-      Navigator.pushNamed(context, '/candidates');
+    Candidate candidate = Candidate(
+        name: _name,
+        role: _role,
+        email: _email,
+        phone: _phone,
+        resume: 'client-name/$_name/resume.pdf',
+        skills: _skills,
+        addedOnDateTime: now,
+        interviewStage: "screening");
+
+    uploadFile(candidate.name, _localResumeFile!, candidate.resume)
+        .then((resumeFireStorage) {
+      if (resumeFireStorage != null) {
+        candidatesFirestore
+            .doc(candidate.email)
+            .set(candidate, SetOptions(merge: true))
+            .then((value) {
+          Navigator.pushNamed(context, '/candidates');
+        }).catchError((error) => print("Failed to add candidate $error"));
+      }
     });
   }
 

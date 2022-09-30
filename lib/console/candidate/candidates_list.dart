@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/firebase/candidate/candidates_firestore.dart';
-import 'package:milkyway/firebase/candidate/rounds_firestore.dart';
+import 'package:milkyway/firebase/candidates_firestore.dart';
+import 'package:milkyway/firebase/rounds_firestore.dart';
 import 'package:milkyway/settings.dart';
 
 class CandidatesList extends ConsumerStatefulWidget {

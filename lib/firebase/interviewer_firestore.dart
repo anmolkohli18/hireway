@@ -1,14 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final interviewerFirestore = FirebaseFirestore.instance
+final _interviewerCollection = FirebaseFirestore.instance
     .collection("clients")
     .doc("client-name")
-    .collection("interviewer")
-    .withConverter(
-        fromFirestore: (snapshots, _) =>
-            Interviewer.fromJson(snapshots.data()!),
-        toFirestore: (interviewer, _) => interviewer.toJson());
+    .collection("interviewer");
+
+final DocumentReference<Map<String, dynamic>> interviewerMetadata =
+    _interviewerCollection.doc("metadata");
+
+Stream<List<String>> interviewersList() async* {
+  DocumentSnapshot<Map<String, dynamic>> value =
+      await interviewerMetadata.get();
+
+  List<String> kOptions = [];
+
+  List<dynamic> interviewers = value.data()!["interviewers"]! as List<dynamic>;
+  for (int index = 0; index < interviewers.length; index++) {
+    String name = interviewers[index].split(",")[0];
+    String email = interviewers[index].split(",")[1];
+    kOptions.add("$name <$email>");
+  }
+
+  yield kOptions;
+}
+
+final interviewerFirestore = _interviewerCollection.withConverter(
+    fromFirestore: (snapshots, _) => Interviewer.fromJson(snapshots.data()!),
+    toFirestore: (interviewer, _) => interviewer.toJson());
 
 @immutable
 class Interviewer {

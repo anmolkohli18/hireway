@@ -7,6 +7,7 @@ import 'package:milkyway/console/interviewers/add_new_interviewer.dart';
 import 'package:milkyway/console/interviewers/interviewers_list.dart';
 import 'package:milkyway/console/roles/add_new_roles.dart';
 import 'package:milkyway/console/roles/roles_list.dart';
+import 'package:milkyway/console/schedule/add_new_schedule.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
@@ -73,7 +74,16 @@ class AppConsole extends ConsumerWidget {
             return routing(
                 const Expanded(child: AddNewCandidate()), settings.name);
           }
-        } else if (settings.name == '/schedule') {
+        } else if (settings.name!.startsWith('/schedules')) {
+          ref.read(selectedMenuProvider.notifier).state = 1;
+          if (settings.name == '/schedules') {
+            return routing(
+                const Expanded(child: SchedulesList()), settings.name);
+          } else if (settings.name == '/schedules/new') {
+            return routing(
+                const Expanded(child: AddNewSchedule()), settings.name);
+          }
+        } else if (settings.name == '/schedules') {
           ref.read(selectedMenuProvider.notifier).state = 2;
           return routing(const Expanded(child: SchedulesList()), settings.name);
         } else if (settings.name!.startsWith('/roles')) {
