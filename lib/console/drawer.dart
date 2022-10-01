@@ -7,7 +7,7 @@ class DrawerWidget extends ConsumerWidget {
   final menuItems = [
     ["Home", Icons.home_outlined, '/home'],
     ["Candidates", Icons.person_outline, '/candidates'],
-    ["Schedule", Icons.calendar_today_outlined, '/schedule'],
+    ["Schedule", Icons.calendar_today_outlined, '/schedules'],
     ["Roles", Icons.computer_outlined, '/roles'],
     ["Interviewers", Icons.computer_outlined, '/interviewers'],
   ];

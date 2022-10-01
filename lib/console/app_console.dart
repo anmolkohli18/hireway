@@ -11,7 +11,7 @@ import 'package:milkyway/console/schedule/add_new_schedule.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
-import 'package:milkyway/console/schedule.dart';
+import 'package:milkyway/console/schedule_list.dart';
 import 'package:milkyway/firebase/auth/email_page.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 
@@ -21,6 +21,8 @@ final candidatesStateProvider =
 final rolesStateProvider = StateProvider((ref) => RolesState.rolesList);
 final interviewerStateProvider =
     StateProvider((ref) => InterviewersState.interviewersList);
+final scheduleStateProvider =
+    StateProvider((ref) => SchedulesState.schedulesList);
 
 class AppConsole extends ConsumerWidget {
   const AppConsole({Key? key}) : super(key: key);
@@ -75,7 +77,7 @@ class AppConsole extends ConsumerWidget {
                 const Expanded(child: AddNewCandidate()), settings.name);
           }
         } else if (settings.name!.startsWith('/schedules')) {
-          ref.read(selectedMenuProvider.notifier).state = 1;
+          ref.read(selectedMenuProvider.notifier).state = 2;
           if (settings.name == '/schedules') {
             return routing(
                 const Expanded(child: SchedulesList()), settings.name);
@@ -83,9 +85,6 @@ class AppConsole extends ConsumerWidget {
             return routing(
                 const Expanded(child: AddNewSchedule()), settings.name);
           }
-        } else if (settings.name == '/schedules') {
-          ref.read(selectedMenuProvider.notifier).state = 2;
-          return routing(const Expanded(child: SchedulesList()), settings.name);
         } else if (settings.name!.startsWith('/roles')) {
           ref.read(selectedMenuProvider.notifier).state = 3;
           if (settings.name == '/roles') {
