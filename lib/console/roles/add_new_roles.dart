@@ -47,10 +47,7 @@ class _AddNewRoleState extends ConsumerState<AddNewRole> {
         .doc(role.title)
         .set(role, SetOptions(merge: true))
         .then((value) => print("Role Added"))
-        .catchError((error) => print("Failed to add role $error"))
-        .then((value) {
-      Navigator.pushNamed(context, '/roles');
-    });
+        .catchError((error) => print("Failed to add role $error"));
   }
 
   Future<void> validateForm() async {

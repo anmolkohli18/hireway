@@ -44,10 +44,7 @@ class _AddNewInterviewerState extends ConsumerState<AddNewInterviewer> {
         .doc(interviewer.name)
         .set(interviewer, SetOptions(merge: true))
         .then((value) => print("Interviewer Added"))
-        .catchError((error) => print("Failed to add interviewer $error"))
-        .then((value) {
-      Navigator.pushNamed(context, '/interviewers');
-    });
+        .catchError((error) => print("Failed to add interviewer $error"));
   }
 
   Future<void> validateForm() async {

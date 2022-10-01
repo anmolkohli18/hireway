@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
+import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
 
 class SchedulesList extends ConsumerStatefulWidget {
@@ -39,7 +41,7 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
   Widget listOfSchedules(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Schedule>>(
         stream: scheduleFirestore
-            .orderBy('addedOnDateTime', descending: true)
+            .orderBy('startDateTime', descending: false)
             .limit(10)
             .snapshots(),
         builder: (context, snapshot) {
@@ -290,6 +292,7 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
   Widget scheduleTile(int index, String candidateInfo, String interviewers,
       DateTime startDateTime, String duration, String addedOnDateTime) {
     return InkWell(
+      // TODO add logic for ontap
       onTap: () {},
       onHover: (hovered) {
         if (hovered) {
@@ -311,65 +314,73 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SelectableText(
-                        candidateInfo,
-                        style: highlightLinkIndex == index
-                            ? const TextStyle(
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.black87,
-                                decorationThickness: 2,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 20)
-                            : const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 20),
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        interviewers,
-                        style:
-                            const TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        startDateTime.toString(),
-                        style:
-                            const TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                      Text(
-                        startDateTime.toString(),
-                        style:
-                            const TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                    ],
+                  SelectableText(
+                    getNameFromInfo(candidateInfo),
+                    style: highlightLinkIndex == index
+                        ? const TextStyle(
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.black87,
+                            decorationThickness: 2,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20)
+                        : const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20),
                   ),
+                  startDateTime.isBefore(DateTime.now())
+                      ? highlightedTag("past due", Colors.white, Colors.black45)
+                      : Container(),
                 ],
               ),
               const SizedBox(
                 height: 8,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Duration",
-                    style: secondaryTextStyle,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Interviewers",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        interviewers
+                            .split(",")
+                            .map((interviewer) => getNameFromInfo(interviewer))
+                            .join(", "),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                    ],
                   ),
-                  Text(duration),
+                  const SizedBox(
+                    width: 100,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Timing",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        "${DateFormat("dd MMMM hh:mm a").format(startDateTime)}, $duration",
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
+                      ),
+                    ],
+                  )
                 ],
               ),
             ],

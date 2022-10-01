@@ -9,6 +9,7 @@ import 'package:milkyway/custom_fields/auto_complete_text_field.dart';
 import 'package:milkyway/firebase/candidates_firestore.dart';
 import 'package:milkyway/firebase/interviewer_firestore.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
+import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
 import 'package:intl/intl.dart';
 
@@ -76,21 +77,13 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
     Schedule schedule =
         Schedule(_candidateInfo, _interviewers, _startDateTime, _duration, now);
 
-    final regex = RegExp(
-        r"[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-    RegExpMatch? match = regex.firstMatch(schedule.candidateInfo);
-    String candidateEmail = match != null
-        ? schedule.candidateInfo.substring(match.start, match.end)
-        : "Candidate Email Not Found";
+    String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
 
     scheduleFirestore
         .doc(candidateEmail)
         .set(schedule, SetOptions(merge: true))
-        .catchError((error) => print("Failed to add interviewer $error"))
-        .then((value) {
-      print("Schedule Added");
-      Navigator.pushNamed(context, '/schedules');
-    });
+        .then((value) => print("Schedule Added"))
+        .catchError((error) => print("Failed to add interviewer $error"));
   }
 
   Future<void> validateForm() async {
