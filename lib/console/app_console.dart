@@ -11,7 +11,7 @@ import 'package:milkyway/console/schedule/add_new_schedule.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
-import 'package:milkyway/console/schedule_list.dart';
+import 'package:milkyway/console/schedule/schedule_list.dart';
 import 'package:milkyway/firebase/auth/email_page.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 

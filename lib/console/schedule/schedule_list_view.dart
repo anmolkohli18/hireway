@@ -1,73 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
 import 'package:milkyway/helper/date_functions.dart';
 import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
+import 'package:intl/intl.dart';
 
-class SchedulesList extends ConsumerStatefulWidget {
-  const SchedulesList({
-    Key? key,
-  }) : super(key: key);
+class ScheduleListView extends StatefulWidget {
+  const ScheduleListView({super.key, required this.schedules});
+
+  final List<QueryDocumentSnapshot<Schedule>> schedules;
 
   @override
-  ConsumerState<SchedulesList> createState() => _SchedulesListState();
+  State<ScheduleListView> createState() => _ScheduleListViewState();
 }
 
-class _SchedulesListState extends ConsumerState<SchedulesList>
-    with SingleTickerProviderStateMixin {
-  int highlightLinkIndex = -1;
+class _ScheduleListViewState extends State<ScheduleListView> {
+  int _highlightLinkIndex = -1;
   String _scheduleState = "today";
-
-  AnimationController? _animationController;
-  Animation<double>? _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1));
-    _animation =
-        CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _showOverlay("Schedule is added successfully!");
-    });
-  }
-
-  Widget listOfSchedules(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Schedule>>(
-        stream: scheduleFirestore
-            .orderBy('startDateTime', descending: false)
-            .limit(10)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-          final List<QueryDocumentSnapshot<Schedule>> schedules =
-              snapshot.requireData.docs;
-          if (schedules.isNotEmpty) {
-            return schedulesListView(schedules);
-          } else {
-            return overallEmptyState(context);
-          }
-        });
-  }
 
   bool shouldAddSchedule(Schedule schedule) {
     if (isToday(schedule.startDateTime) && _scheduleState == "today") {
@@ -85,97 +35,6 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
       return true;
     }
     return false;
-  }
-
-  Widget schedulesListView(List<QueryDocumentSnapshot<Schedule>> schedules) {
-    List<Widget> schedulesWidgetList = [];
-    for (var index = 0; index < schedules.length; index++) {
-      Schedule schedule = schedules[index].data();
-      if (shouldAddSchedule(schedule)) {
-        schedulesWidgetList.add(scheduleTile(
-          index,
-          schedule.candidateInfo,
-          schedule.interviewers,
-          schedule.startDateTime,
-          schedule.duration,
-          schedule.addedOnDateTime,
-        ));
-        if (index != schedules.length - 1) {
-          schedulesWidgetList.add(const SizedBox(
-            height: 20,
-          ));
-        }
-      }
-    }
-
-    return DefaultTabController(
-      length: 4,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            header(),
-            const SizedBox(
-              height: 32,
-            ),
-            TabBar(
-                onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      setState(() {
-                        _scheduleState = "today";
-                      });
-                      break;
-                    case 1:
-                      setState(() {
-                        _scheduleState = "tomorrow";
-                      });
-                      break;
-                    case 2:
-                      setState(() {
-                        _scheduleState = "future";
-                      });
-                      break;
-                    case 3:
-                      setState(() {
-                        _scheduleState = "past";
-                      });
-                      break;
-                  }
-                },
-                labelColor: Colors.black,
-                labelStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.black,
-                tabs: const [
-                  Tab(
-                    text: "Today",
-                  ),
-                  Tab(
-                    text: "Tomorrow",
-                  ),
-                  Tab(
-                    text: "All Future",
-                  ),
-                  Tab(
-                    text: "Past (2 weeks)",
-                  ),
-                ]),
-            const SizedBox(
-              height: 16,
-            ),
-            schedulesWidgetList.isNotEmpty
-                ? Expanded(
-                    child: ListView(
-                    children: schedulesWidgetList,
-                  ))
-                : tabEmptyState()
-          ],
-        ),
-      ),
-    );
   }
 
   Widget header() {
@@ -314,11 +173,11 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
       onHover: (hovered) {
         if (hovered) {
           setState(() {
-            highlightLinkIndex = index;
+            _highlightLinkIndex = index;
           });
         } else {
           setState(() {
-            highlightLinkIndex = -1;
+            _highlightLinkIndex = -1;
           });
         }
       },
@@ -334,7 +193,7 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
                 children: [
                   SelectableText(
                     getNameFromInfo(candidateInfo),
-                    style: highlightLinkIndex == index
+                    style: _highlightLinkIndex == index
                         ? const TextStyle(
                             decoration: TextDecoration.underline,
                             decorationColor: Colors.black87,
@@ -428,62 +287,103 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
     );
   }
 
-  void _showOverlay(String successText) async {
-    if (ref.watch(scheduleStateProvider.state).state !=
-        SchedulesState.newScheduleAdded) {
-      return;
-    }
-
-    OverlayState? overlayState = Overlay.of(context);
-    double screenWidth = MediaQuery.of(context).size.width;
-    OverlayEntry successOverlayEntry = OverlayEntry(
-        builder: (context) => Positioned(
-            left: screenWidth / 2,
-            top: 90,
-            child: FadeTransition(
-              opacity: _animation!,
-              child: Card(
-                child: Container(
-                  width: 300,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors
-                        .green.shade100, // Color.fromRGBO(165, 214, 167, 1)
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(
-                          Icons.check_box,
-                          color: Colors.green.shade600,
-                        ),
-                        Text(
-                          successText,
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        const Icon(
-                          Icons.close_outlined,
-                          size: 20,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )));
-    overlayState!.insert(successOverlayEntry);
-    _animationController!.forward();
-    await Future.delayed(const Duration(seconds: 3))
-        .whenComplete(() => _animationController!.reverse())
-        .whenComplete(() => successOverlayEntry.remove());
-  }
-
   @override
   Widget build(BuildContext context) {
-    return listOfSchedules(context);
+    if (widget.schedules.isNotEmpty) {
+      return schedulesListView();
+    } else {
+      return overallEmptyState(context);
+    }
+  }
+
+  Widget schedulesListView() {
+    List<Widget> schedulesWidgetList = [];
+    for (var index = 0; index < widget.schedules.length; index++) {
+      Schedule schedule = widget.schedules[index].data();
+      if (shouldAddSchedule(schedule)) {
+        schedulesWidgetList.add(scheduleTile(
+          index,
+          schedule.candidateInfo,
+          schedule.interviewers,
+          schedule.startDateTime,
+          schedule.duration,
+          schedule.addedOnDateTime,
+        ));
+        if (index != widget.schedules.length - 1) {
+          schedulesWidgetList.add(const SizedBox(
+            height: 20,
+          ));
+        }
+      }
+    }
+
+    return DefaultTabController(
+      length: 4,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            header(),
+            const SizedBox(
+              height: 32,
+            ),
+            TabBar(
+                onTap: (index) {
+                  switch (index) {
+                    case 0:
+                      setState(() {
+                        _scheduleState = "today";
+                      });
+                      break;
+                    case 1:
+                      setState(() {
+                        _scheduleState = "tomorrow";
+                      });
+                      break;
+                    case 2:
+                      setState(() {
+                        _scheduleState = "future";
+                      });
+                      break;
+                    case 3:
+                      setState(() {
+                        _scheduleState = "past";
+                      });
+                      break;
+                  }
+                },
+                labelColor: Colors.black,
+                labelStyle:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.black,
+                tabs: const [
+                  Tab(
+                    text: "Today",
+                  ),
+                  Tab(
+                    text: "Tomorrow",
+                  ),
+                  Tab(
+                    text: "All Future",
+                  ),
+                  Tab(
+                    text: "Past (2 weeks)",
+                  ),
+                ]),
+            const SizedBox(
+              height: 16,
+            ),
+            schedulesWidgetList.isNotEmpty
+                ? Expanded(
+                    child: ListView(
+                    children: schedulesWidgetList,
+                  ))
+                : tabEmptyState()
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -10,6 +10,13 @@ final scheduleFirestore = _scheduleCollection.withConverter(
     fromFirestore: (snapshots, _) => Schedule.fromJson(snapshots.data()!),
     toFirestore: (schedule, _) => schedule.toJson());
 
+CollectionReference<Schedule> scheduleFire() {
+  print("Schedule Fire called");
+  return _scheduleCollection.withConverter(
+      fromFirestore: (snapshots, _) => Schedule.fromJson(snapshots.data()!),
+      toFirestore: (schedule, _) => schedule.toJson());
+}
+
 @immutable
 class Schedule {
   const Schedule(
