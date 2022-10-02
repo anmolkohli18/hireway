@@ -48,6 +48,9 @@ class _AddNewRoleState extends ConsumerState<AddNewRole> {
         .set(role, SetOptions(merge: true))
         .then((value) => print("Role Added"))
         .catchError((error) => print("Failed to add role $error"));
+    rolesCollection.doc("metadata").set({
+      "roles": FieldValue.arrayUnion([role.title])
+    }, SetOptions(merge: true));
   }
 
   Future<void> validateForm() async {

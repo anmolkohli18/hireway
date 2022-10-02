@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
+import 'package:milkyway/helper/date_functions.dart';
 import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
 
@@ -68,13 +69,29 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
         });
   }
 
+  bool shouldAddSchedule(Schedule schedule) {
+    if (isToday(schedule.startDateTime) && _scheduleState == "today") {
+      return true;
+    }
+    if (isTomorrow(schedule.startDateTime) && _scheduleState == "tomorrow") {
+      return true;
+    }
+    if (schedule.startDateTime.isAfter(DateTime.now()) &&
+        _scheduleState == "future") {
+      return true;
+    }
+    if (schedule.startDateTime.isBefore(DateTime.now()) &&
+        _scheduleState == "past") {
+      return true;
+    }
+    return false;
+  }
+
   Widget schedulesListView(List<QueryDocumentSnapshot<Schedule>> schedules) {
     List<Widget> schedulesWidgetList = [];
     for (var index = 0; index < schedules.length; index++) {
       Schedule schedule = schedules[index].data();
-      if (schedule.state == _scheduleState ||
-          (_scheduleState == "this_week" &&
-              (schedule.state == "today" || schedule.state == "tomorrow"))) {
+      if (shouldAddSchedule(schedule)) {
         schedulesWidgetList.add(scheduleTile(
           index,
           schedule.candidateInfo,
@@ -117,12 +134,12 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
                       break;
                     case 2:
                       setState(() {
-                        _scheduleState = "this_week";
+                        _scheduleState = "future";
                       });
                       break;
                     case 3:
                       setState(() {
-                        _scheduleState = "everything_else";
+                        _scheduleState = "past";
                       });
                       break;
                   }
@@ -140,10 +157,10 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
                     text: "Tomorrow",
                   ),
                   Tab(
-                    text: "This Week",
+                    text: "All Future",
                   ),
                   Tab(
-                    text: "Everything Else",
+                    text: "Past (2 weeks)",
                   ),
                 ]),
             const SizedBox(
@@ -214,13 +231,13 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
         tabHeading = "There are no interviews set for tomorrow";
         tabSubHeading = "Schedule interviews now and start hiring";
         break;
-      case "this_week":
-        tabHeading = "There are no interviews set for this week";
+      case "future":
+        tabHeading = "There are no interviews set";
         tabSubHeading = "Schedule interviews now and start hiring";
         break;
-      case "everything_else":
+      case "past":
       default:
-        tabHeading = "There are no interviews set post this week";
+        tabHeading = "There were no interviews in past 2 weeks";
         tabSubHeading = "Schedule interviews now and start hiring";
         break;
     }
@@ -331,7 +348,10 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
                             fontSize: 20),
                   ),
                   startDateTime.isBefore(DateTime.now())
-                      ? highlightedTag("past due", Colors.white, Colors.black45)
+                      ? highlightedTag(
+                          "${DateTime.now().day - startDateTime.day} ${DateTime.now().day - startDateTime.day == 1 ? 'day' : 'days'} ago",
+                          Colors.white,
+                          Colors.black45)
                       : Container(),
                 ],
               ),

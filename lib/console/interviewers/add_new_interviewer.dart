@@ -41,10 +41,14 @@ class _AddNewInterviewerState extends ConsumerState<AddNewInterviewer> {
         addedOnDateTime: now);
 
     interviewerFirestore
-        .doc(interviewer.name)
+        .doc(interviewer.email)
         .set(interviewer, SetOptions(merge: true))
         .then((value) => print("Interviewer Added"))
         .catchError((error) => print("Failed to add interviewer $error"));
+    interviewerCollection.doc("metadata").set({
+      "interviewers":
+          FieldValue.arrayUnion(["${interviewer.name},${interviewer.email}"])
+    }, SetOptions(merge: true));
   }
 
   Future<void> validateForm() async {

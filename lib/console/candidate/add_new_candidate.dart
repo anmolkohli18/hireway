@@ -54,8 +54,11 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
       if (resumeFireStorage != null) {
         candidatesFirestore
             .doc(candidate.email)
-            .set(candidate, SetOptions(merge: true))
-            .then((value) {
+            .set(candidate, SetOptions(merge: true));
+        candidatesCollection.doc("metadata").set({
+          "candidates":
+              FieldValue.arrayUnion(["${candidate.name},${candidate.email}"])
+        }, SetOptions(merge: true)).then((value) {
           Navigator.pushNamed(context, '/candidates');
         }).catchError((error) => print("Failed to add candidate $error"));
       }
@@ -196,7 +199,7 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
                               child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
                                       minimumSize: const Size(250, 50),
-                                      primary: formDefaultColor,
+                                      foregroundColor: formDefaultColor,
                                       side:
                                           BorderSide(color: formDefaultColor)),
                                   onPressed: () async {

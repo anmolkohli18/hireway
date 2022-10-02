@@ -1,16 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final _candidatesCollection = FirebaseFirestore.instance
+final candidatesCollection = FirebaseFirestore.instance
     .collection("clients")
     .doc("client-name")
     .collection("candidates");
 
-final candidatesFirestore = _candidatesCollection.withConverter(
+final candidatesFirestore = candidatesCollection.withConverter(
     fromFirestore: (snapshots, _) => Candidate.fromJson(snapshots.data()!),
     toFirestore: (candidate, _) => candidate.toJson());
 
-final candidateMetadata = _candidatesCollection.doc("metadata");
+final candidateMetadata = candidatesCollection.doc("metadata");
 
 Stream<List<String>> candidatesList() async* {
   DocumentSnapshot<Map<String, dynamic>> value = await candidateMetadata.get();

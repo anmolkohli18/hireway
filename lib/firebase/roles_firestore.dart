@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final rolesFirestore = FirebaseFirestore.instance
+final rolesCollection = FirebaseFirestore.instance
     .collection("clients")
     .doc("client-name")
-    .collection("roles")
-    .withConverter(
-        fromFirestore: (snapshots, _) => Role.fromJson(snapshots.data()!),
-        toFirestore: (role, _) => role.toJson());
+    .collection("roles");
+
+final rolesFirestore = rolesCollection.withConverter(
+    fromFirestore: (snapshots, _) => Role.fromJson(snapshots.data()!),
+    toFirestore: (role, _) => role.toJson());
 
 @immutable
 class Role {

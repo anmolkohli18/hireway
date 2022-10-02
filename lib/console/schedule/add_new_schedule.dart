@@ -74,8 +74,12 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());
 
-    Schedule schedule =
-        Schedule(_candidateInfo, _interviewers, _startDateTime, _duration, now);
+    Schedule schedule = Schedule(
+        candidateInfo: _candidateInfo,
+        interviewers: _interviewers,
+        startDateTime: _startDateTime,
+        duration: _duration,
+        addedOnDateTime: now);
 
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
 
@@ -158,7 +162,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
               ),
               AutoCompleteMultiTextField(
                 textFieldKey: _interviewersFieldKey,
-                kOptions: interviewersList(),
+                kOptions: interviewersStream(),
                 onChanged: setInterviewers,
               ),
               const SizedBox(
@@ -284,7 +288,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                                       borderRadius:
                                           BorderRadius.circular(18)))),
                       onPressed: () {
-                        Navigator.pushNamed(context, '/interviewers');
+                        Navigator.pushNamed(context, '/schedules');
                       },
                       child: const Text("Never mind"))
                 ],

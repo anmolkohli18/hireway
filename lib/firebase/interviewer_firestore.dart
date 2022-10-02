@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final _interviewerCollection = FirebaseFirestore.instance
+final interviewerCollection = FirebaseFirestore.instance
     .collection("clients")
     .doc("client-name")
     .collection("interviewer");
 
 final DocumentReference<Map<String, dynamic>> interviewerMetadata =
-    _interviewerCollection.doc("metadata");
+    interviewerCollection.doc("metadata");
 
-Stream<List<String>> interviewersList() async* {
+Stream<List<String>> interviewersStream() async* {
   DocumentSnapshot<Map<String, dynamic>> value =
       await interviewerMetadata.get();
 
@@ -25,7 +25,7 @@ Stream<List<String>> interviewersList() async* {
   yield kOptions;
 }
 
-final interviewerFirestore = _interviewerCollection.withConverter(
+final interviewerFirestore = interviewerCollection.withConverter(
     fromFirestore: (snapshots, _) => Interviewer.fromJson(snapshots.data()!),
     toFirestore: (interviewer, _) => interviewer.toJson());
 
