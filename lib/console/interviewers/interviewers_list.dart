@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,9 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
+  final StreamController<QuerySnapshot<Interviewer>> _streamController =
+      StreamController();
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +36,11 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
+    _streamController.addStream(interviewerFirestore
+        .orderBy('addedOnDateTime', descending: true)
+        .limit(10)
+        .snapshots());
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("Interviewer is added successfully!");
     });
@@ -38,10 +48,7 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
 
   Widget listOfInterviewers(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Interviewer>>(
-        stream: interviewerFirestore
-            .orderBy('addedOnDateTime', descending: true)
-            .limit(10)
-            .snapshots(),
+        stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(

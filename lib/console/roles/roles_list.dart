@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,9 @@ class _RolesListState extends ConsumerState<RolesList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
+  final StreamController<QuerySnapshot<Role>> _streamController =
+      StreamController();
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +36,11 @@ class _RolesListState extends ConsumerState<RolesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
+    _streamController.addStream(rolesFirestore
+        .orderBy('addedOnDateTime', descending: true)
+        .limit(10)
+        .snapshots());
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("Role is added successfully!");
     });
@@ -38,10 +48,7 @@ class _RolesListState extends ConsumerState<RolesList>
 
   Widget listOfRoles(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Role>>(
-        stream: rolesFirestore
-            .orderBy('addedOnDateTime', descending: true)
-            .limit(10)
-            .snapshots(),
+        stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
