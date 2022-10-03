@@ -8,6 +8,7 @@ import 'package:milkyway/custom_fields/auto_complete_multi_text_field.dart';
 import 'package:milkyway/custom_fields/auto_complete_text_field.dart';
 import 'package:milkyway/firebase/candidates_firestore.dart';
 import 'package:milkyway/firebase/interviewer_firestore.dart';
+import 'package:milkyway/firebase/rounds_firestore.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
 import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
@@ -88,6 +89,15 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
         .set(schedule, SetOptions(merge: true))
         .then((value) => print("Schedule Added"))
         .catchError((error) => print("Failed to add interviewer $error"));
+
+    _interviewers.split(",").forEach((interviewer) =>
+        roundsFirestore(candidateEmail).doc(_startDateTime.toString()).set(
+            Round(
+                scheduledOn: _startDateTime.toString(),
+                interviewer: interviewer,
+                rating: 0,
+                review: "")));
+    ;
   }
 
   Future<void> validateForm() async {

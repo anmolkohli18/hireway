@@ -16,8 +16,8 @@ class AutoCompleteTextField extends StatefulWidget {
 }
 
 class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
-  String selectedOption = "";
-  Widget selectedOptionWidget = Container();
+  String _selectedOption = "";
+  Widget _selectedOptionWidget = Container();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              selectedOption.isEmpty
+              _selectedOption.isEmpty
                   ? TypeAheadFormField(
                       key: widget.textFieldKey,
                       textFieldConfiguration: TextFieldConfiguration(
@@ -60,8 +60,8 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                       },
                       onSuggestionSelected: (selection) {
                         setState(() {
-                          selectedOption = selection! as String;
-                          selectedOptionWidget = Padding(
+                          _selectedOption = selection! as String;
+                          _selectedOptionWidget = Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Container(
                               decoration: const BoxDecoration(
@@ -69,14 +69,14 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(8))),
                               padding: const EdgeInsets.all(10.0),
-                              child: Text(selectedOption),
+                              child: Text(_selectedOption),
                             ),
                           );
                         });
-                        widget.onChanged(selectedOption);
+                        widget.onChanged(_selectedOption);
                       },
                     )
-                  : selectedOptionWidget,
+                  : _selectedOptionWidget,
             ],
           );
         });

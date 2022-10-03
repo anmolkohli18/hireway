@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/candidate/add_new_candidate.dart';
+import 'package:milkyway/console/candidate/candidate_profile.dart';
 import 'package:milkyway/console/enums.dart';
 import 'package:milkyway/console/candidate/candidates_list.dart';
 import 'package:milkyway/console/interviewers/add_new_interviewer.dart';
@@ -8,6 +9,7 @@ import 'package:milkyway/console/interviewers/interviewers_list.dart';
 import 'package:milkyway/console/roles/add_new_roles.dart';
 import 'package:milkyway/console/roles/roles_list.dart';
 import 'package:milkyway/console/schedule/add_new_schedule.dart';
+import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
@@ -75,6 +77,19 @@ class AppConsole extends ConsumerWidget {
           } else if (settings.name == '/candidates/new') {
             return routing(
                 const Expanded(child: AddNewCandidate()), settings.name);
+          } else if (settings.name!.startsWith('/candidates?name=')) {
+            final String candidateName = settings.name!
+                .split("=")[1]
+                .split("&")[0]
+                .replaceAll("%20", " ");
+            final String candidateEmail = settings.name!.split("=")[2];
+            return routing(
+                Expanded(
+                    child: CandidateProfile(
+                  name: candidateName,
+                  email: candidateEmail,
+                )),
+                settings.name);
           }
         } else if (settings.name!.startsWith('/schedules')) {
           ref.read(selectedMenuProvider.notifier).state = 2;

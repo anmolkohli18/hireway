@@ -269,7 +269,9 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     }
 
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.pushNamed(context, "/candidates?name=$name&email=$email");
+      },
       onHover: (hovered) {
         if (hovered) {
           setState(() {
@@ -388,7 +390,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     for (int index = 0; index < 5; index++) {
       ratingIcons.add(Icon(
         index + 1 <= rating ? Icons.star : Icons.star_border,
-        color: const Color(0XFFFDCC0D),
+        color: Colors.amber,
         size: 30,
       ));
     }
@@ -427,10 +429,16 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                 const SizedBox(
                   height: 10,
                 ),
-                Text(
-                  round.summary,
-                  style: const TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w400),
+                SizedBox(
+                  width: 400,
+                  child: Text(
+                    round.review,
+                    maxLines: 2,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.w400),
+                  ),
                 ),
                 const SizedBox(
                   height: 6,

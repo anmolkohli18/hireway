@@ -49,6 +49,7 @@ dependencies:
   intl: ^0.17.0
   flutter_typeahead: ^4.1.1
   datetime_picker_formfield: ^2.0.1
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:

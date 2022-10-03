@@ -1,5 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+String whoAmI() {
+  // TODO extract name email from login and then return value
+  return "Anmol Kohli <anmol.kohli18@gmail.com>";
+}
+
 void firebaseAuth() {
   FirebaseAuth auth = FirebaseAuth.instance;
   auth.authStateChanges().listen((User? user) {
