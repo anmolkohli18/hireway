@@ -66,6 +66,15 @@ class _CandidateProfileState extends State<CandidateProfile> {
   @override
   void initState() {
     super.initState();
+    candidatesFirestore
+        .where("email", isEqualTo: widget.email)
+        .get()
+        .then((value) {
+      setState(() {
+        _candidateInfo = value.docs.first.data();
+      });
+    });
+
     _streamController.addStream(roundsFirestore(widget.email)
         .orderBy("scheduledOn", descending: true)
         .limit(10)
@@ -81,15 +90,6 @@ class _CandidateProfileState extends State<CandidateProfile> {
           _pendingReviewDocument = value.docs.first;
         });
       }
-    });
-
-    candidatesFirestore
-        .where("email", isEqualTo: widget.email)
-        .get()
-        .then((value) {
-      setState(() {
-        _candidateInfo = value.docs.first.data();
-      });
     });
   }
 
@@ -375,7 +375,7 @@ class _CandidateProfileState extends State<CandidateProfile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 80.0, right: 80, left: 80),
+      padding: const EdgeInsets.only(top: 80.0, left: 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -407,13 +407,22 @@ class _CandidateProfileState extends State<CandidateProfile> {
               itemCount: 3,
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  return candidateInfoWidget();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 80.0),
+                    child: candidateInfoWidget(),
+                  );
                 }
                 if (index == 1) {
-                  return pendingReviews();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 80.0),
+                    child: pendingReviews(),
+                  );
                 }
                 if (index == 2) {
-                  return reviewsAndRatings(widget.email);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 80.0),
+                    child: reviewsAndRatings(widget.email),
+                  );
                 }
                 return Container();
               },
