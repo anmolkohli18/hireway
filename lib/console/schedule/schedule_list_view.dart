@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:milkyway/custom_fields/highlighted_tag.dart';
 import 'package:milkyway/firebase/schedule_firestore.dart';
 import 'package:milkyway/helper/date_functions.dart';
 import 'package:milkyway/helper/regex_functions.dart';
@@ -264,24 +265,6 @@ class _ScheduleListViewState extends State<ScheduleListView> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget highlightedTag(String text, Color textColor, Color backgroundColor) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Container(
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: const BorderRadius.all(Radius.circular(8))),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          text,
-          style: TextStyle(color: textColor),
         ),
       ),
     );

@@ -85,7 +85,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
 
     scheduleFirestore
-        .doc(candidateEmail)
+        .doc("$candidateEmail,${_startDateTime.toString()}")
         .set(schedule, SetOptions(merge: true))
         .then((value) => print("Schedule Added"))
         .catchError((error) => print("Failed to add interviewer $error"));

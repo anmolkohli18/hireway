@@ -33,7 +33,7 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _streamController.addStream(scheduleFire()
+    _streamController.addStream(scheduleFirestore
         .orderBy('startDateTime', descending: false)
         .limit(10)
         .snapshots());

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
+import 'package:milkyway/custom_fields/highlighted_tag.dart';
 import 'package:milkyway/firebase/interviewer_firestore.dart';
 import 'package:milkyway/settings.dart';
 
@@ -347,24 +348,6 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget highlightedTag(String text, Color textColor, Color backgroundColor) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Container(
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: const BorderRadius.all(Radius.circular(8))),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          text,
-          style: TextStyle(color: textColor),
         ),
       ),
     );

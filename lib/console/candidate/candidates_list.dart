@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:milkyway/console/app_console.dart';
 import 'package:milkyway/console/enums.dart';
+import 'package:milkyway/custom_fields/highlighted_tag.dart';
 import 'package:milkyway/firebase/candidates_firestore.dart';
 import 'package:milkyway/firebase/rounds_firestore.dart';
 import 'package:milkyway/settings.dart';
@@ -257,7 +258,6 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
       String resumeLink,
       List<String> skills,
       String interviewStage) {
-    // TODO get from firestore
     var skillsWidgets = <Widget>[];
     for (int index = 0; index < skills.length && index < 5; index++) {
       skillsWidgets.add(
@@ -362,24 +362,6 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget highlightedTag(String text, Color textColor, Color backgroundColor) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Container(
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: const BorderRadius.all(Radius.circular(8))),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          text,
-          style: TextStyle(color: textColor),
         ),
       ),
     );
