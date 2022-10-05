@@ -38,6 +38,7 @@ class Candidate {
     required this.skills,
     required this.addedOnDateTime,
     required this.interviewStage,
+    required this.hiredOrRejectedOn,
   });
 
   final String name;
@@ -48,6 +49,7 @@ class Candidate {
   final String skills;
   final String addedOnDateTime;
   final String interviewStage;
+  final String hiredOrRejectedOn;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
@@ -59,6 +61,7 @@ class Candidate {
           skills: json['skills']! as String,
           addedOnDateTime: json['addedOnDateTime']! as String,
           interviewStage: json['interviewStage']! as String,
+          hiredOrRejectedOn: json["hiredOrRejectedOn"]! as String,
         );
 
   Map<String, Object?> toJson() {
@@ -71,6 +74,7 @@ class Candidate {
       'skills': skills,
       'addedOnDateTime': addedOnDateTime,
       'interviewStage': interviewStage,
+      'hiredOrRejectedOn': hiredOrRejectedOn
     };
   }
 }

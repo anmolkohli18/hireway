@@ -15,7 +15,9 @@ import 'package:milkyway/settings.dart';
 import 'package:intl/intl.dart';
 
 class AddNewSchedule extends ConsumerStatefulWidget {
-  const AddNewSchedule({Key? key}) : super(key: key);
+  const AddNewSchedule({Key? key, required this.info}) : super(key: key);
+
+  final String info;
 
   @override
   ConsumerState<AddNewSchedule> createState() => _AddNewScheduleState();
@@ -54,6 +56,15 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
       child: Text("60 minutes"),
     )
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _candidateInfo = widget.info;
+      _height = _height + 28;
+    });
+  }
 
   void setCandidate(String candidate) {
     setState(() {
@@ -159,6 +170,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                 textFieldKey: _candidateInfoFieldKey,
                 kOptions: candidatesList(),
                 onChanged: setCandidate,
+                preSelectedOption: _candidateInfo,
               ),
               const SizedBox(
                 height: 30,

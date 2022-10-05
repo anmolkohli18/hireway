@@ -6,10 +6,12 @@ class AutoCompleteTextField extends StatefulWidget {
       {super.key,
       required this.textFieldKey,
       required this.kOptions,
-      required this.onChanged});
+      required this.onChanged,
+      required this.preSelectedOption});
   final Key textFieldKey;
   final Stream<List<String>> kOptions;
   final Function(String) onChanged;
+  final String preSelectedOption;
 
   @override
   State<AutoCompleteTextField> createState() => _AutoCompleteTextFieldState();
@@ -17,7 +19,27 @@ class AutoCompleteTextField extends StatefulWidget {
 
 class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
   String _selectedOption = "";
-  Widget _selectedOptionWidget = Container();
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _selectedOption = widget.preSelectedOption;
+    });
+  }
+
+  Widget selectedOptionWidget(String selectedOption) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: const BoxDecoration(
+            color: Colors.black12,
+            borderRadius: BorderRadius.all(Radius.circular(8))),
+        padding: const EdgeInsets.all(10.0),
+        child: Text(selectedOption),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,22 +83,11 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                       onSuggestionSelected: (selection) {
                         setState(() {
                           _selectedOption = selection! as String;
-                          _selectedOptionWidget = Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                  color: Colors.black12,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8))),
-                              padding: const EdgeInsets.all(10.0),
-                              child: Text(_selectedOption),
-                            ),
-                          );
                         });
                         widget.onChanged(_selectedOption);
                       },
                     )
-                  : _selectedOptionWidget,
+                  : selectedOptionWidget(_selectedOption),
             ],
           );
         });

@@ -47,7 +47,8 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
         resume: 'client-name/$_name/resume.pdf',
         skills: _skills,
         addedOnDateTime: now,
-        interviewStage: "screening");
+        interviewStage: "screening",
+        hiredOrRejectedOn: "");
 
     uploadFile(candidate.name, _localResumeFile!, candidate.resume)
         .then((resumeFireStorage) {

@@ -123,7 +123,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                       break;
                     case 2:
                       setState(() {
-                        interviewStage = "selected";
+                        interviewStage = "hired";
                       });
                       break;
                     case 3:
@@ -146,7 +146,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                     text: "Ongoing",
                   ),
                   Tab(
-                    text: "Selected",
+                    text: "Hired",
                   ),
                   Tab(
                     text: "Rejected",
@@ -260,12 +260,12 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
       String interviewStage) {
     var skillsWidgets = <Widget>[];
     for (int index = 0; index < skills.length && index < 5; index++) {
-      skillsWidgets.add(
-          highlightedTag(skills[index], Colors.black, Colors.grey.shade300));
+      skillsWidgets.add(highlightedTag(skills[index],
+          const TextStyle(color: Colors.black), Colors.grey.shade300));
     }
     if (skills.length > 5) {
-      skillsWidgets
-          .add(highlightedTag("more", Colors.black, Colors.grey.shade300));
+      skillsWidgets.add(highlightedTag(
+          "more", const TextStyle(color: Colors.black), Colors.grey.shade300));
     }
 
     return InkWell(

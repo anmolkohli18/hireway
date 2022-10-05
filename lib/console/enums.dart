@@ -1,4 +1,9 @@
-enum CandidatesState { candidatesList, newCandidateAdded }
+enum CandidatesState {
+  candidatesList,
+  newCandidateAdded,
+  candidateHired,
+  candidateRejected
+}
 
 enum RolesState { rolesList, newRoleAdded }
 

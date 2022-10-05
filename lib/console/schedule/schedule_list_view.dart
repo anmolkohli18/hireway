@@ -210,7 +210,7 @@ class _ScheduleListViewState extends State<ScheduleListView> {
                   startDateTime.isBefore(DateTime.now())
                       ? highlightedTag(
                           "${DateTime.now().day - startDateTime.day} ${DateTime.now().day - startDateTime.day == 1 ? 'day' : 'days'} ago",
-                          Colors.white,
+                          const TextStyle(color: Colors.white),
                           Colors.black45)
                       : Container(),
                 ],

@@ -6,7 +6,8 @@ const Color primaryColor = Colors.black; //Color(0xFF001C63);
 
 const Color secondaryColor = Color(0xff625b71);
 
-const Color successColor = Color(0xFF001C63);
+const Color successColor = Color(0xFF377C7B);
+const Color failedColor = Color(0XFF565F5F);
 
 const Color lightHeadingColor = Colors.black45;
 const Color highlightColor = Color.fromARGB(20, 34, 65, 205);

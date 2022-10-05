@@ -3,31 +3,36 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:milkyway/console/candidate/hire_reject_interview.dart';
 import 'package:milkyway/custom_fields/highlighted_tag.dart';
 import 'package:milkyway/firebase/auth/firebase_auth.dart';
 import 'package:milkyway/firebase/candidates_firestore.dart';
 import 'package:milkyway/firebase/rounds_firestore.dart';
+import 'package:milkyway/helper/stateless_functions.dart';
 import 'package:milkyway/settings.dart';
 
-class CandidateProfile extends StatefulWidget {
+class CandidateProfile extends ConsumerStatefulWidget {
   const CandidateProfile({super.key, required this.name, required this.email});
 
   final String name;
   final String email;
 
   @override
-  State<CandidateProfile> createState() => _CandidateProfileState();
+  ConsumerState<CandidateProfile> createState() => _CandidateProfileState();
 }
 
-class _CandidateProfileState extends State<CandidateProfile> {
+class _CandidateProfileState extends ConsumerState<CandidateProfile>
+    with SingleTickerProviderStateMixin {
   String _latestRoundReview = "";
   double _rating = 0;
 
   QueryDocumentSnapshot<Round>? _pendingReviewDocument;
-  Candidate? _candidateInfo;
 
   final StreamController<QuerySnapshot<Round>> _streamController =
+      StreamController();
+  final StreamController<QuerySnapshot<Candidate>> _candidateStreamControlled =
       StreamController();
 
   final _formKey = GlobalKey<FormState>();
@@ -66,14 +71,10 @@ class _CandidateProfileState extends State<CandidateProfile> {
   @override
   void initState() {
     super.initState();
-    candidatesFirestore
+
+    _candidateStreamControlled.addStream(candidatesFirestore
         .where("email", isEqualTo: widget.email)
-        .get()
-        .then((value) {
-      setState(() {
-        _candidateInfo = value.docs.first.data();
-      });
-    });
+        .snapshots());
 
     _streamController.addStream(roundsFirestore(widget.email)
         .orderBy("scheduledOn", descending: true)
@@ -275,19 +276,19 @@ class _CandidateProfileState extends State<CandidateProfile> {
         : Container();
   }
 
-  Widget skillsList() {
-    List<String> skills = _candidateInfo!.skills.split(",");
+  Widget skillsList(Candidate candidateInfo) {
+    List<String> skills = candidateInfo.skills.split(",");
     var skillsWidgets = <Widget>[];
     for (int index = 0; index < skills.length; index++) {
-      skillsWidgets.add(
-          highlightedTag(skills[index], Colors.black, Colors.grey.shade300));
+      skillsWidgets.add(highlightedTag(skills[index],
+          const TextStyle(color: Colors.black), Colors.grey.shade300));
     }
     return Row(
       children: skillsWidgets,
     );
   }
 
-  Widget candidateInfoWidget() {
+  Widget candidateInfoWidget(Candidate candidateInfo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -298,138 +299,197 @@ class _CandidateProfileState extends State<CandidateProfile> {
             style: heading2,
           ),
         ),
-        _candidateInfo != null
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          "Phone",
-                          style: heading3,
-                        ),
-                      ),
-                      Text(_candidateInfo!.phone)
-                    ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    "Phone",
+                    style: heading3,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          "Resume",
-                          style: heading3,
-                        ),
-                      ),
-                      OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 30)),
-                          onPressed: () {
-                            print(_candidateInfo!.resume);
-                          },
-                          child: const Text("Download"))
-                    ],
+                ),
+                Text(candidateInfo.phone)
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    "Resume",
+                    style: heading3,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          "Role",
-                          style: heading3,
-                        ),
-                      ),
-                      Text(_candidateInfo!.role)
-                    ],
+                ),
+                OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 30)),
+                    onPressed: () {
+                      // TODO add resume download link or function
+                      print(candidateInfo.resume);
+                    },
+                    child: const Text("Download"))
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    "Role",
+                    style: heading3,
                   ),
-                ],
-              )
-            : Container(),
+                ),
+                Text(candidateInfo.role)
+              ],
+            ),
+          ],
+        ),
         const SizedBox(
           height: 10,
         ),
-        _candidateInfo != null
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: Text(
-                      "Skills",
-                      style: heading3,
-                    ),
-                  ),
-                  skillsList()
-                ],
-              )
-            : Container()
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text(
+                "Skills",
+                style: heading3,
+              ),
+            ),
+            skillsList(candidateInfo)
+          ],
+        )
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 80.0, left: 80),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.name,
-                style: heading1,
+    return StreamBuilder<QuerySnapshot<Candidate>>(
+        stream: _candidateStreamControlled.stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black45,
               ),
-              _candidateInfo != null
-                  ? highlightedTag(_candidateInfo!.interviewStage, Colors.white,
-                      Colors.black54)
-                  : Container(),
-            ],
-          ),
-          Text(
-            widget.email,
-            style: subHeading,
-          ),
-          const SizedBox(
-            height: 30,
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.8,
-            child: ListView.separated(
-              shrinkWrap: false,
-              separatorBuilder: (_, __) => const SizedBox(height: 30),
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 80.0),
-                    child: candidateInfoWidget(),
-                  );
-                }
-                if (index == 1) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 80.0),
-                    child: pendingReviews(),
-                  );
-                }
-                if (index == 2) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 80.0),
-                    child: reviewsAndRatings(widget.email),
-                  );
-                }
-                return Container();
-              },
+            );
+          }
+
+          final Candidate candidateInfo =
+              snapshot.requireData.docs.first.data();
+          return Padding(
+            padding: const EdgeInsets.only(top: 80.0, left: 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 80.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.name,
+                        style: heading1,
+                      ),
+                      highlightedTag(candidateInfo.interviewStage,
+                          const TextStyle(color: Colors.white), Colors.black54),
+                    ],
+                  ),
+                ),
+                Text(
+                  widget.email,
+                  style: subHeading,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                // TODO add by hiring manager in the message below after auth is fixed
+                isHired(candidateInfo.interviewStage)
+                    ? highlightedMessage(
+                        "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))}",
+                        const TextStyle(color: Colors.black),
+                        Colors.grey.shade300,
+                        successColor)
+                    : Container(),
+                isRejected(candidateInfo.interviewStage)
+                    ? highlightedMessage(
+                        "Candidate was rejected on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))}",
+                        const TextStyle(color: Colors.black),
+                        Colors.grey.shade300,
+                        failedColor)
+                    : Container(),
+                const SizedBox(
+                  height: 30,
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: ListView.separated(
+                    shrinkWrap: false,
+                    separatorBuilder: (_, __) => const SizedBox(height: 30),
+                    itemCount: 4,
+                    itemBuilder: (context, index) {
+                      switch (index) {
+                        case 0:
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 80.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                    child: candidateInfoWidget(candidateInfo)),
+                                const SizedBox(
+                                  width: 50,
+                                ),
+                                !isRejected(candidateInfo.interviewStage) &&
+                                        !isHired(candidateInfo.interviewStage)
+                                    ? SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.3,
+                                        child: HireRejectInterview(
+                                            name: widget.name,
+                                            email: widget.email,
+                                            interviewStage:
+                                                candidateInfo.interviewStage),
+                                      )
+                                    : Container()
+                              ],
+                            ),
+                          );
+                        case 1:
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 80.0),
+                            child: pendingReviews(),
+                          );
+                        case 2:
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 80.0),
+                            child: reviewsAndRatings(widget.email),
+                          );
+                      }
+                      return const SizedBox(
+                        height: 30,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+        });
   }
 }

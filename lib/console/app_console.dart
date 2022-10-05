@@ -9,7 +9,6 @@ import 'package:milkyway/console/interviewers/interviewers_list.dart';
 import 'package:milkyway/console/roles/add_new_roles.dart';
 import 'package:milkyway/console/roles/roles_list.dart';
 import 'package:milkyway/console/schedule/add_new_schedule.dart';
-import 'package:milkyway/helper/regex_functions.dart';
 import 'package:milkyway/settings.dart';
 import 'package:milkyway/console/homepage.dart';
 import 'package:milkyway/console/routes/routing.dart';
@@ -49,6 +48,8 @@ class AppConsole extends ConsumerWidget {
           outlinedButtonTheme: OutlinedButtonThemeData(
               style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 40),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   side: const BorderSide(color: primaryButtonColor))),
@@ -97,8 +98,15 @@ class AppConsole extends ConsumerWidget {
             return routing(
                 const Expanded(child: SchedulesList()), settings.name);
           } else if (settings.name == '/schedules/new') {
+            final String candidateInfo = settings.arguments != null
+                ? (settings.arguments as Map<String, String>)["info"]!
+                : "";
             return routing(
-                const Expanded(child: AddNewSchedule()), settings.name);
+                Expanded(
+                    child: AddNewSchedule(
+                  info: candidateInfo,
+                )),
+                settings.name);
           }
         } else if (settings.name!.startsWith('/roles')) {
           ref.read(selectedMenuProvider.notifier).state = 3;
