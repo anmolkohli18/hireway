@@ -122,11 +122,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
           }
 
           if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
+            return Container();
           }
 
           final rounds = snapshot.requireData.docs;
@@ -448,7 +444,6 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 const SizedBox(
                   height: 10,
                 ),
-                // TODO add by hiring manager in the message below after auth is fixed
                 isHired(candidateInfo.interviewStage)
                     ? highlightedMessage(
                         "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",

@@ -14,7 +14,6 @@ import 'package:hireway/settings.dart';
 import 'package:hireway/console/homepage.dart';
 import 'package:hireway/console/routes/routing.dart';
 import 'package:hireway/console/schedule/schedule_list.dart';
-import 'package:hireway/firebase/auth/email_page.dart';
 import 'package:hireway/firebase/auth/firebase_auth.dart';
 
 final selectedMenuProvider = StateProvider((ref) => 0);
@@ -69,8 +68,6 @@ class AppConsole extends ConsumerWidget {
       initialRoute: isLoggedIn() ? '/login' : '/home',
       onGenerateRoute: (settings) {
         if (isLoggedIn()) {
-          final userDetails = getUserDetails();
-          print("${userDetails.name} ${userDetails.email}");
           if (settings.name == '/home') {
             ref.read(selectedMenuProvider.notifier).state = 0;
             return routing(const Expanded(child: Homepage()), settings.name);
