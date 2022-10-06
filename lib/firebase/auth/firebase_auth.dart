@@ -19,7 +19,7 @@ void firebaseAuth() {
 
 HirewayUser getUserDetails() {
   return HirewayUser(
-      name: FirebaseAuth.instance.currentUser!.displayName ?? "",
+      name: FirebaseAuth.instance.currentUser!.displayName!,
       email: FirebaseAuth.instance.currentUser!.email!);
 }
 

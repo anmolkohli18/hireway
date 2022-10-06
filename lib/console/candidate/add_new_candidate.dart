@@ -48,7 +48,8 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
         skills: _skills,
         addedOnDateTime: now,
         interviewStage: "screening",
-        hiredOrRejectedOn: "");
+        hiredOrRejectedOn: "",
+        hiringManager: "");
 
     uploadFile(candidate.name, _localResumeFile!, candidate.resume)
         .then((resumeFireStorage) {

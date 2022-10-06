@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/helper/regex_functions.dart';
 import 'package:intl/intl.dart';
 import 'package:hireway/console/candidate/hire_reject_interview.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
@@ -382,6 +383,25 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
     );
   }
 
+  Widget candidateInterviewStage(String interviewStage) {
+    switch (interviewStage) {
+      case "screening":
+        return highlightedTag(interviewStage.toUpperCase(),
+            const TextStyle(color: Colors.white), Colors.black54);
+      case "ongoing":
+        return highlightedTag(interviewStage.toUpperCase(),
+            const TextStyle(color: Colors.white), Colors.black54);
+      case "hired":
+        return highlightedTag(interviewStage.toUpperCase(),
+            const TextStyle(color: Colors.white), successColor);
+      case "rejected":
+        return highlightedTag(interviewStage.toUpperCase(),
+            const TextStyle(color: Colors.white), failedColor);
+    }
+    return highlightedTag(interviewStage.toUpperCase(),
+        const TextStyle(color: Colors.white), Colors.black54);
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Candidate>>(
@@ -417,8 +437,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                         widget.name,
                         style: heading1,
                       ),
-                      highlightedTag(candidateInfo.interviewStage,
-                          const TextStyle(color: Colors.white), Colors.black54),
+                      candidateInterviewStage(candidateInfo.interviewStage),
                     ],
                   ),
                 ),
@@ -432,14 +451,14 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 // TODO add by hiring manager in the message below after auth is fixed
                 isHired(candidateInfo.interviewStage)
                     ? highlightedMessage(
-                        "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))}",
+                        "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
                         const TextStyle(color: Colors.black),
                         Colors.grey.shade300,
                         successColor)
                     : Container(),
                 isRejected(candidateInfo.interviewStage)
                     ? highlightedMessage(
-                        "Candidate was rejected on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))}",
+                        "Candidate was rejected on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
                         const TextStyle(color: Colors.black),
                         Colors.grey.shade300,
                         failedColor)

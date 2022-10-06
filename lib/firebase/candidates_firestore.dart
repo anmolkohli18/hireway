@@ -29,17 +29,17 @@ Stream<List<String>> candidatesList() async* {
 
 @immutable
 class Candidate {
-  const Candidate({
-    required this.name,
-    required this.role,
-    required this.resume,
-    required this.email,
-    required this.phone,
-    required this.skills,
-    required this.addedOnDateTime,
-    required this.interviewStage,
-    required this.hiredOrRejectedOn,
-  });
+  const Candidate(
+      {required this.name,
+      required this.role,
+      required this.resume,
+      required this.email,
+      required this.phone,
+      required this.skills,
+      required this.addedOnDateTime,
+      required this.interviewStage,
+      required this.hiredOrRejectedOn,
+      required this.hiringManager});
 
   final String name;
   final String role;
@@ -50,6 +50,7 @@ class Candidate {
   final String addedOnDateTime;
   final String interviewStage;
   final String hiredOrRejectedOn;
+  final String hiringManager;
 
   Candidate.fromJson(Map<String, Object?> json)
       : this(
@@ -62,6 +63,7 @@ class Candidate {
           addedOnDateTime: json['addedOnDateTime']! as String,
           interviewStage: json['interviewStage']! as String,
           hiredOrRejectedOn: json["hiredOrRejectedOn"]! as String,
+          hiringManager: json['hiringManager']! as String,
         );
 
   Map<String, Object?> toJson() {
@@ -74,7 +76,8 @@ class Candidate {
       'skills': skills,
       'addedOnDateTime': addedOnDateTime,
       'interviewStage': interviewStage,
-      'hiredOrRejectedOn': hiredOrRejectedOn
+      'hiredOrRejectedOn': hiredOrRejectedOn,
+      'hiringManager': hiringManager
     };
   }
 }

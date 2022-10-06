@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
+import 'package:hireway/firebase/auth/firebase_auth.dart';
 import 'package:hireway/firebase/candidates_firestore.dart';
 import 'package:hireway/settings.dart';
 
@@ -80,7 +81,8 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
                             btnOkOnPress: () {
                               candidatesFirestore.doc(widget.email).update({
                                 "interviewStage": "hired",
-                                "hiredOrRejectedOn": DateTime.now().toString()
+                                "hiredOrRejectedOn": DateTime.now().toString(),
+                                "hiringManager": whoAmI()
                               });
                               ref.read(candidatesStateProvider.notifier).state =
                                   CandidatesState.candidateHired;
@@ -119,7 +121,8 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
                             btnOkOnPress: () {
                               candidatesFirestore.doc(widget.email).update({
                                 "interviewStage": "rejected",
-                                "hiredOrRejectedOn": DateTime.now().toString()
+                                "hiredOrRejectedOn": DateTime.now().toString(),
+                                "hiringManager": whoAmI()
                               });
                               ref.read(candidatesStateProvider.notifier).state =
                                   CandidatesState.candidateRejected;
