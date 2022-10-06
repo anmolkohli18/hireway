@@ -1,10 +1,10 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/firebase/candidates_firestore.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/settings.dart';
 
 class HireRejectInterview extends ConsumerStatefulWidget {
   const HireRejectInterview(

@@ -2,16 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/custom_fields/auto_complete_multi_text_field.dart';
-import 'package:milkyway/custom_fields/auto_complete_text_field.dart';
-import 'package:milkyway/firebase/candidates_firestore.dart';
-import 'package:milkyway/firebase/interviewer_firestore.dart';
-import 'package:milkyway/firebase/rounds_firestore.dart';
-import 'package:milkyway/firebase/schedule_firestore.dart';
-import 'package:milkyway/helper/regex_functions.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/auto_complete_multi_text_field.dart';
+import 'package:hireway/custom_fields/auto_complete_text_field.dart';
+import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/firebase/interviewer_firestore.dart';
+import 'package:hireway/firebase/rounds_firestore.dart';
+import 'package:hireway/firebase/schedule_firestore.dart';
+import 'package:hireway/helper/date_functions.dart';
+import 'package:hireway/helper/regex_functions.dart';
+import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 
 class AddNewSchedule extends ConsumerStatefulWidget {
@@ -38,20 +39,20 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
 
   double _height = 620;
 
-  final _durationDropDown = [
-    const DropdownMenuItem<String>(
+  final List<DropdownMenuItem<String>> _durationDropDown = const [
+    DropdownMenuItem<String>(
       value: "15 minutes",
       child: Text("15 minutes"),
     ),
-    const DropdownMenuItem<String>(
+    DropdownMenuItem<String>(
       value: "30 minutes",
       child: Text("30 minutes"),
     ),
-    const DropdownMenuItem<String>(
+    DropdownMenuItem<String>(
       value: "45 minutes",
       child: Text("45 minutes"),
     ),
-    const DropdownMenuItem<String>(
+    DropdownMenuItem<String>(
       value: "60 minutes",
       child: Text("60 minutes"),
     )
@@ -233,7 +234,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                       final time = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.fromDateTime(
-                            currentValue ?? DateTime.now()),
+                            currentValue ?? roundOffMeetingTime()),
                         builder: (context, child) {
                           return Theme(
                             data: Theme.of(context).copyWith(

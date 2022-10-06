@@ -3,11 +3,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/settings.dart';
-import 'package:milkyway/firebase/candidates_firestore.dart';
-import 'package:milkyway/firebase/upload_storage.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/settings.dart';
+import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/firebase/fire_storage.dart';
 import 'package:intl/intl.dart';
 
 class AddNewCandidate extends ConsumerStatefulWidget {

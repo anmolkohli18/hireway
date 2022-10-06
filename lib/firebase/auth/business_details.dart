@@ -1,0 +1,205 @@
+import 'package:flutter/material.dart';
+import 'package:hireway/firebase/auth/firebase_auth.dart';
+import 'package:hireway/firebase/business_user_firestore.dart';
+import 'package:hireway/settings.dart';
+
+class GetOnboardingDetailsForm extends StatefulWidget {
+  const GetOnboardingDetailsForm({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _GetOnboardingDetailsFormState();
+}
+
+class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
+  String _userName = "";
+  String? _userRole;
+  String _businessName = "";
+
+  final _formKey = GlobalKey<FormState>();
+  final _userNameFieldKey = GlobalKey<FormFieldState>();
+  final _userRoleFieldKey = GlobalKey<FormFieldState>();
+  final _businessNameFieldKey = GlobalKey<FormFieldState>();
+
+  bool _isFormEnabled = false;
+
+  double _height = 550;
+
+  void validateFormField(GlobalKey<FormFieldState> formFieldKey) {
+    if (formFieldKey.currentState!.validate()) {
+      validateForm();
+    } else {
+      validateForm();
+      setState(() {
+        _height = _height + 18.5;
+      });
+    }
+  }
+
+  Future<void> validateForm() async {
+    if (_userName.isNotEmpty && _userRole != null && _businessName.isNotEmpty) {
+      setState(() {
+        _isFormEnabled = true;
+      });
+    } else if (_isFormEnabled == true) {
+      setState(() {
+        _isFormEnabled = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: primaryColor,
+      body: Center(
+        child: Container(
+          width: 600,
+          height: _height,
+          padding: const EdgeInsets.all(40),
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 30),
+                  child: Text(
+                    "We need a few more details to get you started",
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    "Your Name",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                TextFormField(
+                  key: _userNameFieldKey,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                  onChanged: (text) {
+                    setState(() {
+                      _userName = text;
+                    });
+                    validateFormField(_userNameFieldKey);
+                  },
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "John David Marcus"),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    "Your Role",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                DropdownButtonFormField<String>(
+                  key: _userRoleFieldKey,
+                  isExpanded: true,
+                  value: _userRole,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                  items: const [
+                    DropdownMenuItem<String>(
+                        value: "Hiring Manager", child: Text("Hiring Manager")),
+                    DropdownMenuItem<String>(
+                        value: "Interviewer", child: Text("Interviewer")),
+                    DropdownMenuItem<String>(value: "HR", child: Text("HR")),
+                    DropdownMenuItem<String>(
+                        value: "Other", child: Text("Other"))
+                  ],
+                  onChanged: (selected) {
+                    setState(() {
+                      _userRole = selected ?? "";
+                    });
+                    validateFormField(_userRoleFieldKey);
+                  },
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    "Business Name",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                TextFormField(
+                  key: _businessNameFieldKey,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the name of your business';
+                    }
+                    return null;
+                  },
+                  onChanged: (text) {
+                    setState(() {
+                      _businessName = text;
+                    });
+                    validateFormField(_businessNameFieldKey);
+                  },
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "Johnsons & Johnsons"),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                SizedBox(
+                  height: 50,
+                  width: 600,
+                  child: ElevatedButton(
+                      style: ButtonStyle(
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)))),
+                      onPressed: _isFormEnabled
+                          ? () {
+                              addClient(_businessName, getUserDetails().email,
+                                  _userName, _userRole!);
+                              updateDisplayName(_userName);
+                              Navigator.pushNamed(context, "/home");
+                            }
+                          : null,
+                      child: const Text(
+                        "Go To Homepage",
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      )),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

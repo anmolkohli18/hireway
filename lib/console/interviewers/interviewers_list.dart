@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/custom_fields/highlighted_tag.dart';
-import 'package:milkyway/firebase/interviewer_firestore.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/firebase/interviewer_firestore.dart';
+import 'package:hireway/settings.dart';
 
 class InterviewersList extends ConsumerStatefulWidget {
   const InterviewersList({

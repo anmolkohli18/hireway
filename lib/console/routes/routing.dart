@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/drawer.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/drawer.dart';
 
 MyCustomRoute routing(Widget child, String? routeName) {
   return MyCustomRoute(

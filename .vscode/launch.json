@@ -5,19 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "milkyway",
+            "name": "hireway",
             "request": "launch",
             "type": "dart",
             "args": ["--web-port", "50609"],
         },
         {
-            "name": "milkyway (profile mode)",
+            "name": "hireway (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "milkyway (release mode)",
+            "name": "hireway (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

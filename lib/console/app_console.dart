@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/candidate/add_new_candidate.dart';
-import 'package:milkyway/console/candidate/candidate_profile.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/console/candidate/candidates_list.dart';
-import 'package:milkyway/console/interviewers/add_new_interviewer.dart';
-import 'package:milkyway/console/interviewers/interviewers_list.dart';
-import 'package:milkyway/console/roles/add_new_roles.dart';
-import 'package:milkyway/console/roles/roles_list.dart';
-import 'package:milkyway/console/schedule/add_new_schedule.dart';
-import 'package:milkyway/settings.dart';
-import 'package:milkyway/console/homepage.dart';
-import 'package:milkyway/console/routes/routing.dart';
-import 'package:milkyway/console/schedule/schedule_list.dart';
-import 'package:milkyway/firebase/auth/email_page.dart';
-import 'package:milkyway/firebase/auth/firebase_auth.dart';
+import 'package:hireway/console/candidate/add_new_candidate.dart';
+import 'package:hireway/console/candidate/candidate_profile.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/console/candidate/candidates_list.dart';
+import 'package:hireway/console/interviewers/add_new_interviewer.dart';
+import 'package:hireway/console/interviewers/interviewers_list.dart';
+import 'package:hireway/console/roles/add_new_roles.dart';
+import 'package:hireway/console/roles/roles_list.dart';
+import 'package:hireway/console/schedule/add_new_schedule.dart';
+import 'package:hireway/firebase/auth/business_details.dart';
+import 'package:hireway/settings.dart';
+import 'package:hireway/console/homepage.dart';
+import 'package:hireway/console/routes/routing.dart';
+import 'package:hireway/console/schedule/schedule_list.dart';
+import 'package:hireway/firebase/auth/email_page.dart';
+import 'package:hireway/firebase/auth/firebase_auth.dart';
 
 final selectedMenuProvider = StateProvider((ref) => 0);
 final candidatesStateProvider =
@@ -67,69 +68,73 @@ class AppConsole extends ConsumerWidget {
               background: primaryButtonColor, secondary: secondaryButtonColor)),
       initialRoute: isLoggedIn() ? '/login' : '/home',
       onGenerateRoute: (settings) {
-        if (settings.name == '/home') {
-          ref.read(selectedMenuProvider.notifier).state = 0;
-          return routing(const Expanded(child: Homepage()), settings.name);
-        } else if (settings.name!.startsWith('/candidates')) {
-          ref.read(selectedMenuProvider.notifier).state = 1;
-          if (settings.name == '/candidates') {
-            return routing(
-                const Expanded(child: CandidatesList()), settings.name);
-          } else if (settings.name == '/candidates/new') {
-            return routing(
-                const Expanded(child: AddNewCandidate()), settings.name);
-          } else if (settings.name!.startsWith('/candidates?name=')) {
-            final String candidateName = settings.name!
-                .split("=")[1]
-                .split("&")[0]
-                .replaceAll("%20", " ");
-            final String candidateEmail = settings.name!.split("=")[2];
-            return routing(
-                Expanded(
-                    child: CandidateProfile(
-                  name: candidateName,
-                  email: candidateEmail,
-                )),
-                settings.name);
+        if (isLoggedIn()) {
+          final userDetails = getUserDetails();
+          print("${userDetails.name} ${userDetails.email}");
+          if (settings.name == '/home') {
+            ref.read(selectedMenuProvider.notifier).state = 0;
+            return routing(const Expanded(child: Homepage()), settings.name);
+          } else if (settings.name!.startsWith('/candidates')) {
+            ref.read(selectedMenuProvider.notifier).state = 1;
+            if (settings.name == '/candidates') {
+              return routing(
+                  const Expanded(child: CandidatesList()), settings.name);
+            } else if (settings.name == '/candidates/new') {
+              return routing(
+                  const Expanded(child: AddNewCandidate()), settings.name);
+            } else if (settings.name!.startsWith('/candidates?name=')) {
+              final String candidateName = settings.name!
+                  .split("=")[1]
+                  .split("&")[0]
+                  .replaceAll("%20", " ");
+              final String candidateEmail = settings.name!.split("=")[2];
+              return routing(
+                  Expanded(
+                      child: CandidateProfile(
+                    name: candidateName,
+                    email: candidateEmail,
+                  )),
+                  settings.name);
+            }
+          } else if (settings.name!.startsWith('/schedules')) {
+            ref.read(selectedMenuProvider.notifier).state = 2;
+            if (settings.name == '/schedules') {
+              return routing(
+                  const Expanded(child: SchedulesList()), settings.name);
+            } else if (settings.name == '/schedules/new') {
+              final String candidateInfo = settings.arguments != null
+                  ? (settings.arguments as Map<String, String>)["info"]!
+                  : "";
+              return routing(
+                  Expanded(
+                      child: AddNewSchedule(
+                    info: candidateInfo,
+                  )),
+                  settings.name);
+            }
+          } else if (settings.name!.startsWith('/roles')) {
+            ref.read(selectedMenuProvider.notifier).state = 3;
+            if (settings.name == '/roles') {
+              return routing(const Expanded(child: RolesList()), settings.name);
+            } else if (settings.name == '/roles/new') {
+              return routing(
+                  const Expanded(child: AddNewRole()), settings.name);
+            }
+          } else if (settings.name!.startsWith('/interviewers')) {
+            ref.read(selectedMenuProvider.notifier).state = 4;
+            if (settings.name == '/interviewers') {
+              return routing(
+                  const Expanded(child: InterviewersList()), settings.name);
+            } else if (settings.name == '/interviewers/new') {
+              return routing(
+                  const Expanded(child: AddNewInterviewer()), settings.name);
+            }
           }
-        } else if (settings.name!.startsWith('/schedules')) {
-          ref.read(selectedMenuProvider.notifier).state = 2;
-          if (settings.name == '/schedules') {
-            return routing(
-                const Expanded(child: SchedulesList()), settings.name);
-          } else if (settings.name == '/schedules/new') {
-            final String candidateInfo = settings.arguments != null
-                ? (settings.arguments as Map<String, String>)["info"]!
-                : "";
-            return routing(
-                Expanded(
-                    child: AddNewSchedule(
-                  info: candidateInfo,
-                )),
-                settings.name);
-          }
-        } else if (settings.name!.startsWith('/roles')) {
-          ref.read(selectedMenuProvider.notifier).state = 3;
-          if (settings.name == '/roles') {
-            return routing(const Expanded(child: RolesList()), settings.name);
-          } else if (settings.name == '/roles/new') {
-            return routing(const Expanded(child: AddNewRole()), settings.name);
-          }
-        } else if (settings.name!.startsWith('/interviewers')) {
-          ref.read(selectedMenuProvider.notifier).state = 4;
-          if (settings.name == '/interviewers') {
-            return routing(
-                const Expanded(child: InterviewersList()), settings.name);
-          } else if (settings.name == '/interviewers/new') {
-            return routing(
-                const Expanded(child: AddNewInterviewer()), settings.name);
-          }
-        } else {
-          // TODO change to login screen
-          return MyCustomRoute(
-              builder: (_) => const GetEmailForm(),
-              settings: RouteSettings(name: settings.name));
         }
+        // TODO change to login screen
+        return MyCustomRoute(
+            builder: (_) => const GetOnboardingDetailsForm(),
+            settings: RouteSettings(name: settings.name));
       },
     );
   }

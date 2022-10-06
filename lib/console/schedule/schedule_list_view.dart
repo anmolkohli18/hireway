@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:milkyway/custom_fields/highlighted_tag.dart';
-import 'package:milkyway/firebase/schedule_firestore.dart';
-import 'package:milkyway/helper/date_functions.dart';
-import 'package:milkyway/helper/regex_functions.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/firebase/schedule_firestore.dart';
+import 'package:hireway/helper/date_functions.dart';
+import 'package:hireway/helper/regex_functions.dart';
+import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 
 class ScheduleListView extends StatefulWidget {

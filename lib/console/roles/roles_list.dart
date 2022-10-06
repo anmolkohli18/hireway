@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/custom_fields/highlighted_tag.dart';
-import 'package:milkyway/firebase/roles_firestore.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/firebase/roles_firestore.dart';
+import 'package:hireway/settings.dart';
 
 class RolesList extends ConsumerStatefulWidget {
   const RolesList({

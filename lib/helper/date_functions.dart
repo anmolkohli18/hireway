@@ -18,15 +18,11 @@ bool isTomorrow(DateTime dateTime) {
   return date.compareTo(tomorrow) == 0;
 }
 
-bool isThisWeek(DateTime dateTime) {
-  final now = DateTime.now();
-  DateTime firstDayOfWeek =
-      getDate(now.subtract(Duration(days: now.weekday - 1)));
-  DateTime lastDayOfLastWeek = getPrevDate(firstDayOfWeek);
-  DateTime lastDayOfWeek =
-      getDate(now.add(Duration(days: DateTime.daysPerWeek - now.weekday)));
-  DateTime firstDateOfNextWeek = getNextDate(lastDayOfWeek);
-
-  final date = getDate(dateTime);
-  return date.isAfter(lastDayOfLastWeek) && date.isBefore(firstDateOfNextWeek);
+DateTime roundOffMeetingTime() {
+  DateTime now = DateTime.now();
+  if (now.minute < 30) {
+    return DateTime(now.year, now.month, now.day, now.hour, 30);
+  } else {
+    return DateTime(now.year, now.month, now.day, now.hour + 1, 0);
+  }
 }

@@ -1,17 +1,19 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:milkyway/console/candidate/hire_reject_interview.dart';
-import 'package:milkyway/custom_fields/highlighted_tag.dart';
-import 'package:milkyway/firebase/auth/firebase_auth.dart';
-import 'package:milkyway/firebase/candidates_firestore.dart';
-import 'package:milkyway/firebase/rounds_firestore.dart';
-import 'package:milkyway/helper/stateless_functions.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/candidate/hire_reject_interview.dart';
+import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/firebase/auth/firebase_auth.dart';
+import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/firebase/rounds_firestore.dart';
+import 'package:hireway/helper/stateless_functions.dart';
+import 'package:hireway/settings.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CandidateProfile extends ConsumerStatefulWidget {
   const CandidateProfile({super.key, required this.name, required this.email});
@@ -113,11 +115,17 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
         stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
           }
 
           if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
-            return Container();
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black45,
+              ),
+            );
           }
 
           final rounds = snapshot.requireData.docs;
@@ -328,9 +336,13 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 OutlinedButton(
                     style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 30)),
-                    onPressed: () {
-                      // TODO add resume download link or function
-                      print(candidateInfo.resume);
+                    onPressed: () async {
+                      final storageRef = FirebaseStorage.instance.ref();
+                      String urlPath = await storageRef
+                          .child(candidateInfo.resume)
+                          .getDownloadURL();
+                      final Uri resumeUri = Uri.parse(urlPath);
+                      launchUrl(resumeUri);
                     },
                     child: const Text("Download"))
               ],
@@ -436,7 +448,9 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                   height: 30,
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
+                  height: MediaQuery.of(context).size.height < 680
+                      ? MediaQuery.of(context).size.height * 0.6
+                      : MediaQuery.of(context).size.height * 0.7,
                   child: ListView.separated(
                     shrinkWrap: false,
                     separatorBuilder: (_, __) => const SizedBox(height: 30),

@@ -1,14 +1,17 @@
 import 'dart:async';
 
+import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/custom_fields/highlighted_tag.dart';
-import 'package:milkyway/firebase/candidates_firestore.dart';
-import 'package:milkyway/firebase/rounds_firestore.dart';
-import 'package:milkyway/settings.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/firebase/rounds_firestore.dart';
+import 'package:hireway/settings.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CandidatesList extends ConsumerStatefulWidget {
   const CandidatesList({
@@ -44,7 +47,10 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
         .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _showOverlay("Candidate is added successfully!");
+      if (ref.watch(candidatesStateProvider.state).state ==
+          CandidatesState.newCandidateAdded) {
+        _showOverlay("Candidate is added successfully!");
+      }
     });
   }
 
@@ -349,15 +355,36 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                       ],
                     ),
                   ),
-                  const Icon(Icons.email),
+                  IconButton(
+                    icon: const Icon(Icons.email),
+                    onPressed: () {
+                      FlutterClipboard.copy(email).then((value) => _showOverlay(
+                          "Candidate's email is copied successfully!"));
+                    },
+                  ),
                   const SizedBox(
                     width: 10,
                   ),
-                  const Icon(Icons.phone),
+                  IconButton(
+                    icon: const Icon(Icons.phone),
+                    onPressed: () {
+                      FlutterClipboard.copy(phone).then((value) => _showOverlay(
+                          "Candidate's email is copied successfully!"));
+                    },
+                  ),
                   const SizedBox(
                     width: 10,
                   ),
-                  const Icon(Icons.download),
+                  IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () async {
+                      final storageRef = FirebaseStorage.instance.ref();
+                      String urlPath =
+                          await storageRef.child(resumeLink).getDownloadURL();
+                      final Uri resumeUri = Uri.parse(urlPath);
+                      launchUrl(resumeUri);
+                    },
+                  ),
                 ],
               ),
             ],
@@ -382,64 +409,68 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
   }
 
   Widget latestReviewAndRating(String email) {
-    final roundsFirestoreInstance = roundsFirestore(email);
     return StreamBuilder<QuerySnapshot<Round>>(
-        stream:
-            roundsFirestoreInstance.orderBy("scheduledOn").limit(1).snapshots(),
+        stream: roundsFirestore(email)
+            .orderBy("scheduledOn", descending: true)
+            .limit(10)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
+            return Center(child: Text(snapshot.error.toString()));
           }
 
           if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
             return Container();
           }
 
-          Round round = snapshot.requireData.docs[0].data();
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                border: round.rating >= 4
-                    ? Border.all(color: Colors.green.shade300)
-                    : round.rating <= 2
-                        ? Border.all(color: Colors.red.shade300)
-                        : Border.all(color: Colors.black38)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ratings(round.rating),
-                const SizedBox(
-                  height: 10,
+          final reviewDocuments = snapshot.requireData.docs;
+          for (int index = 0; index < reviewDocuments.length; index++) {
+            Round round = reviewDocuments[index].data();
+            if (round.review.isNotEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    border: round.rating >= 4
+                        ? Border.all(color: Colors.green.shade300)
+                        : round.rating <= 2
+                            ? Border.all(color: Colors.red.shade300)
+                            : Border.all(color: Colors.black38)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ratings(round.rating),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      width: 400,
+                      child: Text(
+                        round.review,
+                        maxLines: 2,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.w400),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 6,
+                    ),
+                    Text(
+                      round.interviewer,
+                      style: const TextStyle(
+                          color: Colors.black54, fontWeight: FontWeight.w400),
+                    )
+                  ],
                 ),
-                SizedBox(
-                  width: 400,
-                  child: Text(
-                    round.review,
-                    maxLines: 2,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w400),
-                  ),
-                ),
-                const SizedBox(
-                  height: 6,
-                ),
-                Text(
-                  round.interviewer,
-                  style: const TextStyle(
-                      color: Colors.black54, fontWeight: FontWeight.w400),
-                )
-              ],
-            ),
-          );
+              );
+            }
+          }
+          return Container();
         });
   }
 
   void _showOverlay(String successText) async {
-    if (ref.watch(candidatesStateProvider.state).state !=
-        CandidatesState.newCandidateAdded) return;
-
     OverlayState? overlayState = Overlay.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
     OverlayEntry successOverlayEntry = OverlayEntry(
@@ -450,7 +481,6 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
               opacity: _animation!,
               child: Card(
                 child: Container(
-                  width: 300,
                   height: 40,
                   decoration: BoxDecoration(
                     color: Colors
@@ -461,6 +491,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.check_box,

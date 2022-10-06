@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/console/enums.dart';
-import 'package:milkyway/console/schedule/schedule_list_view.dart';
-import 'package:milkyway/firebase/schedule_firestore.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
+import 'package:hireway/console/schedule/schedule_list_view.dart';
+import 'package:hireway/firebase/schedule_firestore.dart';
 
 class SchedulesList extends ConsumerStatefulWidget {
   const SchedulesList({

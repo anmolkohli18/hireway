@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hireway/firebase/auth/hireway_user.dart';
 
 String whoAmI() {
-  // TODO extract name email from login and then return value
-  return "Anmol Kohli <anmol.kohli18@gmail.com>";
+  final userDetails = getUserDetails();
+  return "${userDetails.name} <${userDetails.email}>";
 }
 
 void firebaseAuth() {
@@ -16,8 +17,19 @@ void firebaseAuth() {
   });
 }
 
-bool isLoggedIn() {
-  return FirebaseAuth.instance.currentUser != null;
+HirewayUser getUserDetails() {
+  return HirewayUser(
+      name: FirebaseAuth.instance.currentUser!.displayName ?? "",
+      email: FirebaseAuth.instance.currentUser!.email!);
+}
+
+bool isLoggedIn() => FirebaseAuth.instance.currentUser != null;
+
+void updateDisplayName(String userName) {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    user.updateDisplayName(userName);
+  }
 }
 
 void createUserAccount(String email, String password) async {
@@ -34,19 +46,19 @@ void createUserAccount(String email, String password) async {
       print('The password provided is too weak.');
     } else if (e.code == 'email-already-in-use') {
       print('The account already exists for that email.');
+      User? user = await signInUser(email, password);
     }
   } catch (e) {
     print(e);
   }
 }
 
-void signInUser() async {
+Future<User?> signInUser(String email, String password) async {
   try {
+    //SuperSecretPassword!
     UserCredential userCredential = await FirebaseAuth.instance
-        .signInWithEmailAndPassword(
-            email: "anmol.kohli18@gmail.com", password: "SuperSecretPassword!");
-    print(
-        "User ${userCredential.user!.displayName} ${userCredential.user!.email} is signed in!");
+        .signInWithEmailAndPassword(email: email, password: password);
+    return userCredential.user;
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
       print('No user found for that email.');
@@ -54,4 +66,5 @@ void signInUser() async {
       print('Wrong password provided for that user.');
     }
   }
+  return Future<User?>.value(null);
 }

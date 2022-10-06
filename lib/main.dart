@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:milkyway/console/app_console.dart';
-import 'package:milkyway/firebase/firebase_config.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/firebase/firebase_config.dart';
 
 void main() async {
   await Firebase.initializeApp(options: FirebaseConfig.platformOptions);
