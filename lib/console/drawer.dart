@@ -9,7 +9,7 @@ class DrawerWidget extends ConsumerWidget {
     ["Candidates", Icons.person_outline, '/candidates'],
     ["Schedule", Icons.calendar_today_outlined, '/schedules'],
     ["Roles", Icons.computer_outlined, '/roles'],
-    ["Interviewers", Icons.person_outline, '/interviewers'],
+    ["Users", Icons.person_outline, '/users'],
   ];
 
   DrawerWidget({Key? key}) : super(key: key);

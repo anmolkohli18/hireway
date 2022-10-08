@@ -16,7 +16,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
   String _password = "";
 
   final _formKey = GlobalKey<FormState>();
-  final _passwordFieldKey = GlobalKey<FormState>();
+  final _passwordFieldKey = GlobalKey<FormFieldState>();
 
   bool _isFormEnabled = false;
 
@@ -81,6 +81,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                   ),
                 ),
                 TextFormField(
+                  key: _passwordFieldKey,
                   obscureText: true,
                   enableSuggestions: false,
                   autocorrect: false,
@@ -94,6 +95,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                     setState(() {
                       _password = text;
                     });
+                    validateFormField(_passwordFieldKey);
                   },
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(),

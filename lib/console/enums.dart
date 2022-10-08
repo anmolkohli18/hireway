@@ -7,6 +7,6 @@ enum CandidatesState {
 
 enum RolesState { rolesList, newRoleAdded }
 
-enum InterviewersState { interviewersList, newInterviewerAdded }
+enum UsersState { usersList, newUserAdded }
 
 enum SchedulesState { schedulesList, newScheduleAdded }

@@ -7,7 +7,7 @@ import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/auto_complete_multi_text_field.dart';
 import 'package:hireway/custom_fields/auto_complete_text_field.dart';
 import 'package:hireway/firebase/candidates_firestore.dart';
-import 'package:hireway/firebase/interviewer_firestore.dart';
+import 'package:hireway/firebase/user_firestore.dart';
 import 'package:hireway/firebase/rounds_firestore.dart';
 import 'package:hireway/firebase/schedule_firestore.dart';
 import 'package:hireway/helper/date_functions.dart';
@@ -185,7 +185,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
               ),
               AutoCompleteMultiTextField(
                 textFieldKey: _interviewersFieldKey,
-                kOptions: interviewersStream(),
+                kOptions: usersStream(),
                 onChanged: setInterviewers,
               ),
               const SizedBox(
@@ -267,7 +267,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                   style: heading3,
                 ),
               ),
-              DropdownButton<String>(
+              DropdownButtonFormField<String>(
                   key: _durationFieldKey,
                   isExpanded: true,
                   value: _duration,
@@ -292,6 +292,9 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                         onPressed: _isFormEnabled
                             ? () {
                                 addSchedule().then((value) {
+                                  candidatesFirestore
+                                      .doc(getEmailFromInfo(_candidateInfo))
+                                      .update({"interviewStage": "ongoing"});
                                   ref
                                       .read(scheduleStateProvider.notifier)
                                       .state = SchedulesState.newScheduleAdded;

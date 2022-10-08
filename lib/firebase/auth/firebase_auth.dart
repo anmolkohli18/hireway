@@ -18,6 +18,9 @@ void firebaseAuth() {
 }
 
 HirewayUser getUserDetails() {
+  print(isLoggedIn());
+  print(FirebaseAuth.instance.currentUser!.displayName);
+  print(FirebaseAuth.instance.currentUser!.email);
   return HirewayUser(
       name: FirebaseAuth.instance.currentUser!.displayName!,
       email: FirebaseAuth.instance.currentUser!.email!);
@@ -28,6 +31,7 @@ bool isLoggedIn() => FirebaseAuth.instance.currentUser != null;
 void updateDisplayName(String userName) {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
+    print("Updating user name");
     user.updateDisplayName(userName);
   }
 }
@@ -47,6 +51,7 @@ void createUserAccount(String email, String password) async {
     } else if (e.code == 'email-already-in-use') {
       print('The account already exists for that email.');
       User? user = await signInUser(email, password);
+      print(user != null ? "${user.email}" : "user is null");
     }
   } catch (e) {
     print(e);

@@ -4,12 +4,12 @@ import 'package:hireway/console/candidate/add_new_candidate.dart';
 import 'package:hireway/console/candidate/candidate_profile.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/console/candidate/candidates_list.dart';
-import 'package:hireway/console/interviewers/add_new_interviewer.dart';
-import 'package:hireway/console/interviewers/interviewers_list.dart';
+import 'package:hireway/console/users/invite_new_user.dart';
+import 'package:hireway/console/users/users_list.dart';
 import 'package:hireway/console/roles/add_new_roles.dart';
 import 'package:hireway/console/roles/roles_list.dart';
 import 'package:hireway/console/schedule/add_new_schedule.dart';
-import 'package:hireway/firebase/auth/business_details.dart';
+import 'package:hireway/firebase/auth/email_page.dart';
 import 'package:hireway/settings.dart';
 import 'package:hireway/console/homepage.dart';
 import 'package:hireway/console/routes/routing.dart';
@@ -20,8 +20,7 @@ final selectedMenuProvider = StateProvider((ref) => 0);
 final candidatesStateProvider =
     StateProvider((ref) => CandidatesState.candidatesList);
 final rolesStateProvider = StateProvider((ref) => RolesState.rolesList);
-final interviewerStateProvider =
-    StateProvider((ref) => InterviewersState.interviewersList);
+final userStateProvider = StateProvider((ref) => UsersState.usersList);
 final scheduleStateProvider =
     StateProvider((ref) => SchedulesState.schedulesList);
 
@@ -117,20 +116,19 @@ class AppConsole extends ConsumerWidget {
               return routing(
                   const Expanded(child: AddNewRole()), settings.name);
             }
-          } else if (settings.name!.startsWith('/interviewers')) {
+          } else if (settings.name!.startsWith('/users')) {
             ref.read(selectedMenuProvider.notifier).state = 4;
-            if (settings.name == '/interviewers') {
+            if (settings.name == '/users') {
+              return routing(const Expanded(child: UsersList()), settings.name);
+            } else if (settings.name == '/users/new') {
               return routing(
-                  const Expanded(child: InterviewersList()), settings.name);
-            } else if (settings.name == '/interviewers/new') {
-              return routing(
-                  const Expanded(child: AddNewInterviewer()), settings.name);
+                  const Expanded(child: InviteNewUser()), settings.name);
             }
           }
         }
         // TODO change to login screen
         return MyCustomRoute(
-            builder: (_) => const GetOnboardingDetailsForm(),
+            builder: (_) => const GetEmailForm(),
             settings: RouteSettings(name: settings.name));
       },
     );

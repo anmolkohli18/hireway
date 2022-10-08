@@ -7,10 +7,6 @@ class Homepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return onboardingSteps(context);
-  }
-
-  Widget onboardingSteps(BuildContext context) {
     return Center(
         child: Container(
             width: 648,

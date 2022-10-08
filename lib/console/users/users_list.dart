@@ -6,19 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/firebase/interviewer_firestore.dart';
+import 'package:hireway/firebase/user_firestore.dart';
 import 'package:hireway/settings.dart';
 
-class InterviewersList extends ConsumerStatefulWidget {
-  const InterviewersList({
+class UsersList extends ConsumerStatefulWidget {
+  const UsersList({
     Key? key,
   }) : super(key: key);
 
   @override
-  ConsumerState<InterviewersList> createState() => _InterviewersListState();
+  ConsumerState<UsersList> createState() => _UsersListState();
 }
 
-class _InterviewersListState extends ConsumerState<InterviewersList>
+class _UsersListState extends ConsumerState<UsersList>
     with SingleTickerProviderStateMixin {
   int highlightLinkIndex = -1;
   bool isAvailable = true;
@@ -26,7 +26,7 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<Interviewer>> _streamController =
+  final StreamController<QuerySnapshot<User>> _streamController =
       StreamController();
 
   @override
@@ -37,18 +37,18 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _streamController.addStream(interviewerFirestore
+    _streamController.addStream(userFirestore
         .orderBy('addedOnDateTime', descending: true)
         .limit(10)
         .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _showOverlay("Interviewer is added successfully!");
+      _showOverlay("User is added successfully!");
     });
   }
 
-  Widget listOfInterviewers(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Interviewer>>(
+  Widget listOfUsers(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<User>>(
         stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -64,31 +64,30 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
               ),
             );
           }
-          final List<QueryDocumentSnapshot<Interviewer>> interviewers =
+          final List<QueryDocumentSnapshot<User>> users =
               snapshot.requireData.docs;
-          if (interviewers.isNotEmpty) {
-            return interviewersListView(interviewers);
+          if (users.isNotEmpty) {
+            return usersListView(users);
           } else {
             return overallEmptyState(context);
           }
         });
   }
 
-  Widget interviewersListView(
-      List<QueryDocumentSnapshot<Interviewer>> interviewers) {
-    List<Widget> interviewersWidgetList = [];
-    for (var index = 0; index < interviewers.length; index++) {
-      Interviewer interviewer = interviewers[index].data();
-      if (isAvailable == interviewer.available) {
-        interviewersWidgetList.add(interviewerTile(
+  Widget usersListView(List<QueryDocumentSnapshot<User>> users) {
+    List<Widget> usersWidgetList = [];
+    for (var index = 0; index < users.length; index++) {
+      User user = users[index].data();
+      if (isAvailable == user.available) {
+        usersWidgetList.add(userTile(
           index,
-          interviewer.name,
-          interviewer.email,
-          interviewer.skills.split(","),
-          interviewer.addedOnDateTime,
+          user.name,
+          user.email,
+          user.skills.split(","),
+          user.addedOnDateTime,
         ));
-        if (index != interviewers.length - 1) {
-          interviewersWidgetList.add(const SizedBox(
+        if (index != users.length - 1) {
+          usersWidgetList.add(const SizedBox(
             height: 20,
           ));
         }
@@ -137,10 +136,10 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
             const SizedBox(
               height: 16,
             ),
-            interviewersWidgetList.isNotEmpty
+            usersWidgetList.isNotEmpty
                 ? Expanded(
                     child: ListView(
-                    children: interviewersWidgetList,
+                    children: usersWidgetList,
                   ))
                 : tabEmptyState()
           ],
@@ -157,14 +156,14 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              "Interviewers",
+              "Users",
               style: heading1,
             ),
             SizedBox(
               height: 8,
             ),
             Text(
-              "Manage your available interviewers",
+              "Manage your available users",
               style: subHeading,
             ),
           ],
@@ -178,12 +177,12 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
                 backgroundColor: primaryButtonColor,
                 foregroundColor: Colors.white),
             onPressed: () {
-              Navigator.pushNamed(context, '/interviewers/new');
+              Navigator.pushNamed(context, '/users/new');
             },
             child: Row(
               children: const [
                 Icon(Icons.add),
-                Text("Add New Interviewer"),
+                Text("Invite New User"),
               ],
             ))
       ],
@@ -192,11 +191,11 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
 
   Widget tabEmptyState() {
     String tabHeading = isAvailable
-        ? "There are no available interviewers!"
-        : "All interviewers are available!";
+        ? "There are no available users!"
+        : "All users are available!";
     String tabSubHeading = isAvailable
-        ? "Add open interviewers now and start hiring."
-        : "Interviewers marked as unavailable can be viewed here.";
+        ? "Add open users now and start hiring."
+        : "Users marked as unavailable can be viewed here.";
     return Expanded(
       child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -233,14 +232,14 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
                     const Padding(
                       padding: EdgeInsets.only(bottom: 20.0),
                       child: Text(
-                        "Add interviewers to hireway now!",
+                        "Add users to hireway now!",
                         style: heading2,
                       ),
                     ),
                     const Padding(
                       padding: EdgeInsets.only(bottom: 28.0),
                       child: Text(
-                        "It takes only few seconds to add interviewers and start hiring.",
+                        "It takes only few seconds to add users and start hiring.",
                         style: subHeading,
                       ),
                     ),
@@ -248,10 +247,10 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
                         style: ElevatedButton.styleFrom(
                             minimumSize: const Size(200, 60)),
                         onPressed: () {
-                          Navigator.pushNamed(context, '/interviewers/new');
+                          Navigator.pushNamed(context, '/users/new');
                         },
                         child: const Text(
-                          "Add new interviewer",
+                          "Invite new user",
                           style: TextStyle(fontSize: 16),
                         ))
                   ]),
@@ -262,8 +261,8 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
     );
   }
 
-  Widget interviewerTile(int index, String name, String email,
-      List<String> skills, String addedOnDateTime) {
+  Widget userTile(int index, String name, String email, List<String> skills,
+      String addedOnDateTime) {
     var skillsWidgets = <Widget>[];
     for (int index = 0; index < skills.length && index < 5; index++) {
       skillsWidgets.add(highlightedTag(skills[index],
@@ -354,8 +353,7 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
   }
 
   void _showOverlay(String successText) async {
-    if (ref.watch(interviewerStateProvider.state).state !=
-        InterviewersState.newInterviewerAdded) {
+    if (ref.watch(userStateProvider.state).state != UsersState.newUserAdded) {
       return;
     }
 
@@ -409,6 +407,6 @@ class _InterviewersListState extends ConsumerState<InterviewersList>
 
   @override
   Widget build(BuildContext context) {
-    return listOfInterviewers(context);
+    return listOfUsers(context);
   }
 }

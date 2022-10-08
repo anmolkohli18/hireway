@@ -13,16 +13,18 @@ class GetOnboardingDetailsForm extends StatefulWidget {
 class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
   String _userName = "";
   String? _userRole;
+  String _skills = "";
   String _businessName = "";
 
   final _formKey = GlobalKey<FormState>();
   final _userNameFieldKey = GlobalKey<FormFieldState>();
   final _userRoleFieldKey = GlobalKey<FormFieldState>();
+  final _skillsFieldKey = GlobalKey<FormFieldState>();
   final _businessNameFieldKey = GlobalKey<FormFieldState>();
 
   bool _isFormEnabled = false;
 
-  double _height = 550;
+  double _height = 650;
 
   void validateFormField(GlobalKey<FormFieldState> formFieldKey) {
     if (formFieldKey.currentState!.validate()) {
@@ -36,7 +38,10 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
   }
 
   Future<void> validateForm() async {
-    if (_userName.isNotEmpty && _userRole != null && _businessName.isNotEmpty) {
+    if (_userName.isNotEmpty &&
+        _userRole != null &&
+        _skills.isNotEmpty &&
+        _businessName.isNotEmpty) {
       setState(() {
         _isFormEnabled = true;
       });
@@ -120,7 +125,7 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
                   value: _userRole,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
+                      return 'Please select a valid role';
                     }
                     return null;
                   },
@@ -139,6 +144,35 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
                     });
                     validateFormField(_userRoleFieldKey);
                   },
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 10.0),
+                  child: Text(
+                    "Skills *",
+                    style: heading3,
+                  ),
+                ),
+                TextFormField(
+                  key: _skillsFieldKey,
+                  autofocus: false,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter skills to be tested in interviews (comma-separated)';
+                    }
+                    return null;
+                  },
+                  onChanged: (text) {
+                    setState(() {
+                      _skills = text;
+                    });
+                    validateFormField(_skillsFieldKey);
+                  },
+                  decoration: const InputDecoration(
+                      hintText:
+                          "Skills that user can test - Java, Database, Design System"),
                 ),
                 const SizedBox(
                   height: 30,
@@ -184,9 +218,10 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
                                       borderRadius: BorderRadius.circular(8)))),
                       onPressed: _isFormEnabled
                           ? () {
-                              addClient(_businessName, getUserDetails().email,
-                                  _userName, _userRole!);
+                              // TODO test with new user, it is throwing null
                               updateDisplayName(_userName);
+                              addClient(_businessName, getUserDetails().email,
+                                  _userName, _userRole!, _skills);
                               Navigator.pushNamed(context, "/home");
                             }
                           : null,

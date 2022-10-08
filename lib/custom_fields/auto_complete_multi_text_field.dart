@@ -32,10 +32,13 @@ class _AutoCompleteMultiTextFieldState
             );
           }
 
-          final List<String> options =
-              snapshot.hasData ? snapshot.requireData : [""];
+          final List<String> options = snapshot.hasData
+              ? snapshot.requireData
+              : ["Anmol Kohli <anmol.kohli18@gmail.com>"];
           final TextEditingController typeAheadController =
               TextEditingController();
+
+          print(options.length);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
