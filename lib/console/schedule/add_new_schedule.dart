@@ -16,6 +16,7 @@ import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class AddNewSchedule extends ConsumerStatefulWidget {
   const AddNewSchedule({Key? key, required this.info}) : super(key: key);
@@ -94,26 +95,22 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
     String now = dateFormat.format(DateTime.now());
 
     Schedule schedule = Schedule(
+        uid: const Uuid().v1(),
         candidateInfo: _candidateInfo,
         interviewers: _interviewers,
         startDateTime: _startDateTime,
         duration: _duration,
         addedOnDateTime: now);
 
-    String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
-    _schedulesRepository.insert(schedule);
-
-    print(_interviewers);
-    _interviewers.split("|").forEach((interviewer) {
-      print(interviewer);
+    await _schedulesRepository.insert(schedule);
+    _interviewers.split("|").forEach((interviewer) async {
       Round round = Round(
-          uid: "$candidateEmail,$interviewer,${_startDateTime.toString()}",
+          uid: const Uuid().v1(),
           candidateInfo: schedule.candidateInfo,
           scheduledOn: _startDateTime.toString(),
           interviewer: interviewer,
           rating: 0,
           review: "");
-      print("adding empty round");
       _roundsRepository.insert(round);
     });
 
@@ -127,16 +124,10 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
     final emailId = getEmailFromInfo(_candidateInfo);
     final candidatesRepository = CandidatesRepository();
     Candidate? candidate = await candidatesRepository.getOne(emailId);
-    print("emailId $emailId ${candidate == null}");
     Map<String, dynamic> candidateJson = candidate!.toJson();
-    print("candidate json");
     candidateJson["interviewStage"] = "ongoing";
-    print("set candidate json");
     Candidate newCandidate = Candidate.fromJson(candidateJson);
-    print("new candidate");
     candidatesRepository.update(newCandidate);
-    print("update repository");
-    print("new schedule added");
   }
 
   Future<void> validateForm() async {

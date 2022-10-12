@@ -8,6 +8,7 @@ import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/custom_fields/show_overlay.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
@@ -43,11 +44,17 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (ref.watch(candidatesStateProvider.state).state ==
-          CandidatesState.newCandidateAdded) {
-        _showOverlay("Candidate is added successfully!");
-      }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      showOverlay<CandidatesState>(
+          "Candidate is added successfully!",
+          context,
+          _animationController,
+          _animation,
+          candidatesStateProvider,
+          CandidatesState.newCandidateAdded,
+          ref);
+      ref.read(candidatesStateProvider.notifier).state =
+          CandidatesState.candidatesList;
     });
   }
 
@@ -386,8 +393,15 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                   IconButton(
                     icon: const Icon(Icons.email),
                     onPressed: () {
-                      FlutterClipboard.copy(email).then((value) => _showOverlay(
-                          "Candidate's email is copied successfully!"));
+                      FlutterClipboard.copy(email).then((value) =>
+                          showOverlay<CandidatesState>(
+                              "Candidate's email is copied successfully!",
+                              context,
+                              _animationController,
+                              _animation,
+                              candidatesStateProvider,
+                              CandidatesState.candidatesList,
+                              ref));
                     },
                   ),
                   const SizedBox(
@@ -396,8 +410,15 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
                   IconButton(
                     icon: const Icon(Icons.phone),
                     onPressed: () {
-                      FlutterClipboard.copy(phone).then((value) => _showOverlay(
-                          "Candidate's email is copied successfully!"));
+                      FlutterClipboard.copy(phone).then((value) => showOverlay<
+                              CandidatesState>(
+                          "Candidate's phone number is copied successfully!",
+                          context,
+                          _animationController,
+                          _animation,
+                          candidatesStateProvider,
+                          CandidatesState.candidatesList,
+                          ref));
                     },
                   ),
                   const SizedBox(
@@ -484,54 +505,5 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
       );
     }
     return Container();
-  }
-
-  void _showOverlay(String successText) async {
-    OverlayState? overlayState = Overlay.of(context);
-    double screenWidth = MediaQuery.of(context).size.width;
-    OverlayEntry successOverlayEntry = OverlayEntry(
-        builder: (context) => Positioned(
-            left: screenWidth / 2,
-            top: 90,
-            child: FadeTransition(
-              opacity: _animation!,
-              child: Card(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors
-                        .green.shade100, // Color.fromRGBO(165, 214, 167, 1)
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_box,
-                          color: Colors.green.shade600,
-                        ),
-                        Text(
-                          successText,
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        const Icon(
-                          Icons.close_outlined,
-                          size: 20,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )));
-    overlayState!.insert(successOverlayEntry);
-    _animationController!.forward();
-    await Future.delayed(const Duration(seconds: 3))
-        .whenComplete(() => _animationController!.reverse())
-        .whenComplete(() => successOverlayEntry.remove());
   }
 }

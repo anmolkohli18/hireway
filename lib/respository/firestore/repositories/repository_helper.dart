@@ -15,7 +15,11 @@ Future<void> populateVirtualDb(QuerySnapshot<Map<String, dynamic>> event,
     if (document.containsKey(idKey)) {
       switch (documentChanges[index].type) {
         case DocumentChangeType.added:
-          virtualDb.insert(document);
+          bool documentAlreadyExists =
+              await virtualDb.exists(idKey, document[idKey]);
+          if (!documentAlreadyExists) {
+            virtualDb.insert(document);
+          }
           break;
         case DocumentChangeType.modified:
           virtualDb.update(document, idKey, document[idKey]);

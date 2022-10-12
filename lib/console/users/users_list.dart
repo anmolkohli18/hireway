@@ -6,6 +6,7 @@ import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
+import 'package:hireway/custom_fields/show_overlay.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
 import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/settings.dart';
@@ -43,7 +44,15 @@ class _UsersListState extends ConsumerState<UsersList>
     //     .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _showOverlay("User is added successfully!");
+      showOverlay<UsersState>(
+          "User is added successfully!",
+          context,
+          _animationController,
+          _animation,
+          userStateProvider,
+          UsersState.newUserAdded,
+          ref);
+      ref.watch(userStateProvider.notifier).state = UsersState.usersList;
     });
   }
 
@@ -338,58 +347,5 @@ class _UsersListState extends ConsumerState<UsersList>
         ),
       ),
     );
-  }
-
-  void _showOverlay(String successText) async {
-    if (ref.watch(userStateProvider.state).state != UsersState.newUserAdded) {
-      return;
-    }
-
-    OverlayState? overlayState = Overlay.of(context);
-    double screenWidth = MediaQuery.of(context).size.width;
-    OverlayEntry successOverlayEntry = OverlayEntry(
-        builder: (context) => Positioned(
-            left: screenWidth / 2,
-            top: 90,
-            child: FadeTransition(
-              opacity: _animation!,
-              child: Card(
-                child: Container(
-                  width: 300,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors
-                        .green.shade100, // Color.fromRGBO(165, 214, 167, 1)
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(
-                          Icons.check_box,
-                          color: Colors.green.shade600,
-                        ),
-                        Text(
-                          successText,
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.w400),
-                        ),
-                        const Icon(
-                          Icons.close_outlined,
-                          size: 20,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )));
-    overlayState!.insert(successOverlayEntry);
-    _animationController!.forward();
-    await Future.delayed(const Duration(seconds: 3))
-        .whenComplete(() => _animationController!.reverse())
-        .whenComplete(() => successOverlayEntry.remove());
   }
 }

@@ -45,7 +45,7 @@ class _AddNewRoleState extends ConsumerState<AddNewRole> {
         skills: _skills,
         addedOnDateTime: now);
 
-    _rolesRepository.insert(role);
+    await _rolesRepository.insert(role);
   }
 
   Future<void> validateForm() async {

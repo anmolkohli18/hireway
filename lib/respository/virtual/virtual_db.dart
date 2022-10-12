@@ -29,6 +29,9 @@ class VirtualDB {
   Future<Map<String, dynamic>> findOne(String key, String value) async =>
       _items.firstWhere((element) => element[key] == value,
           orElse: () => <String, dynamic>{});
+  Future<bool> exists(String key, String value) async =>
+      _items.firstWhere((element) => element[key] == value,
+          orElse: () => <String, dynamic>{}).isNotEmpty;
 
   Future<List<String>> getMetadata() async => _metadata;
 

@@ -41,6 +41,8 @@ class UsersRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     withUserDocumentConverter(userDocument(user.email)).set(user);
+    await _users.insert(user.toJson());
+
     userMetaDocument(businessName).set({
       "users": FieldValue.arrayUnion(["${user.name},${user.email}"])
     }, SetOptions(merge: true));

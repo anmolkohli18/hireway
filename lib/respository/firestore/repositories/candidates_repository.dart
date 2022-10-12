@@ -44,6 +44,7 @@ class CandidatesRepository {
     withCandidateDocumentConverter(
             candidateDocument(businessName, candidate.email))
         .set(candidate);
+    await _candidates.insert(candidate.toJson());
 
     candidateMetaDocument(businessName).set({
       "candidates":

@@ -47,7 +47,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
         businessName: businessName,
         addedOnDateTime: now);
 
-    _usersRepository.insert(user);
+    await _usersRepository.insert(user);
   }
 
   Future<void> validateForm() async {

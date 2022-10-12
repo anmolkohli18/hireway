@@ -54,9 +54,9 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
         hiringManager: "");
 
     uploadFile(candidate.name, _localResumeFile!, candidate.resume)
-        .then((resumeFireStorage) {
+        .then((resumeFireStorage) async {
       if (resumeFireStorage != null) {
-        _candidatesRepository
+        await _candidatesRepository
             .insert(candidate)
             .then((value) => Navigator.pushNamed(context, '/candidates'))
             .catchError((error) => print("Failed to add candidate $error"));

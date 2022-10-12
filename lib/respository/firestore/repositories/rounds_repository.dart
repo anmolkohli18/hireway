@@ -51,6 +51,7 @@ class RoundsRepository {
     String businessName = await getBusinessName();
     withRoundDocumentConverter(roundDocument(businessName, round.uid))
         .set(round);
+    await _rounds.insert(round.toJson());
 
     roundMetaDocument(businessName).set({
       "rounds": FieldValue.arrayUnion([round.uid])

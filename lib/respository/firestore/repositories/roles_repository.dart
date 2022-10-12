@@ -41,6 +41,7 @@ class RolesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     withRoleDocumentConverter(roleDocument(businessName, role.title)).set(role);
+    await _roles.insert(role.toJson());
 
     roleMetaDocument(businessName).set({
       "roles": FieldValue.arrayUnion([role.title])
