@@ -61,9 +61,9 @@ class RoundsRepository {
   Future<void> update(Round round) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    final rounds =
-        withRoundDocumentConverter(roundDocument(businessName, round.uid));
-    rounds.set(round, SetOptions(merge: true));
+    withRoundDocumentConverter(roundDocument(businessName, round.uid))
+        .set(round, SetOptions(merge: true));
+    await _rounds.update(round.toJson(), "uid", round.uid);
   }
 
   Future<List<String>> roundsList() async {

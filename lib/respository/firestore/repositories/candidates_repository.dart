@@ -55,9 +55,10 @@ class CandidatesRepository {
   Future<void> update(Candidate candidate) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    final candidates = withCandidateDocumentConverter(
-        candidateDocument(businessName, candidate.email));
-    candidates.set(candidate, SetOptions(merge: true));
+    withCandidateDocumentConverter(
+            candidateDocument(businessName, candidate.email))
+        .set(candidate, SetOptions(merge: true));
+    await _candidates.update(candidate.toJson(), "email", candidate.email);
   }
 
   Future<List<String>> candidatesList() async {
@@ -89,9 +90,8 @@ class CandidatesRepository {
         candidateMetaDocument(businessName).snapshots();
     candidatesMetadata.listen(
         (event) => populateMetadataVirtualDB(event, _candidates, "candidates"));
-    print("going to wait");
+
     await candidates.first;
     await candidatesMetadata.first;
-    print("wait is over");
   }
 }

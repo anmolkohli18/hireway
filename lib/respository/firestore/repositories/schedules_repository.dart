@@ -58,9 +58,10 @@ class SchedulesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
-    final schedules = withScheduleDocumentConverter(
-        scheduleDocument(businessName, candidateEmail, schedule.startDateTime));
-    schedules.set(schedule, SetOptions(merge: true));
+    withScheduleDocumentConverter(scheduleDocument(
+            businessName, candidateEmail, schedule.startDateTime))
+        .set(schedule, SetOptions(merge: true));
+    await _schedules.update(schedule.toJson(), "uid", schedule.uid);
   }
 
   Future<List<String>> schedulesList() async {

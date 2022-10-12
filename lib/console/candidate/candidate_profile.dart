@@ -76,10 +76,13 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   void initState() {
     super.initState();
 
-    _roundsRepository.getAllWhere("interviewer", whoAmI()).then((rounds) {
+    _roundsRepository
+        .getAllWhere("candidateInfo", "${widget.name},${widget.email}")
+        .then((rounds) {
       setState(() {
-        final Iterable<Round> emptyRounds =
-            rounds.where((Round element) => element.review.isEmpty);
+        final Iterable<Round> emptyRounds = rounds
+            .where((element) => element.interviewer == whoAmI())
+            .where((Round element) => element.review.isEmpty);
         _pendingReviewDocument =
             emptyRounds.isNotEmpty ? emptyRounds.first : null;
       });
@@ -100,9 +103,11 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
     );
   }
 
-  Widget reviewsAndRatings(String email) {
+  Widget reviewsAndRatings() {
+    print("building future for reviews and ratings");
     return withFutureBuilder(
-        future: _roundsRepository.getAllWhere("email", email),
+        future: _roundsRepository.getAllWhere(
+            "candidateInfo", "${widget.name},${widget.email}"),
         widgetBuilder: roundsListView);
   }
 
@@ -240,7 +245,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 ),
                 ElevatedButton(
                     onPressed: _isFormEnabled
-                        ? () {
+                        ? () async {
                             Round updatedRound = Round(
                                 candidateInfo:
                                     _pendingReviewDocument!.candidateInfo,
@@ -251,7 +256,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                                 scheduledOn:
                                     _pendingReviewDocument!.scheduledOn,
                                 uid: _pendingReviewDocument!.uid);
-                            _roundsRepository.update(updatedRound);
+                            await _roundsRepository.update(updatedRound);
                             setState(() {
                               _pendingReviewDocument = null;
                             });
@@ -466,7 +471,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                   case 2:
                     return Padding(
                       padding: const EdgeInsets.only(right: 80.0),
-                      child: reviewsAndRatings(widget.email),
+                      child: reviewsAndRatings(),
                     );
                 }
                 return const SizedBox(

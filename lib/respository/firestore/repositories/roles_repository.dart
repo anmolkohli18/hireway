@@ -51,9 +51,8 @@ class RolesRepository {
   Future<void> update(Role role) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    final roles =
-        withRoleDocumentConverter(roleDocument(businessName, role.title));
-    roles.set(role, SetOptions(merge: true));
+    withRoleDocumentConverter(roleDocument(businessName, role.title)).set(role, SetOptions(merge: true));
+    await _roles.update(role.toJson(), "title", role.title);
   }
 
   Future<List<String>> rolesList() async {
