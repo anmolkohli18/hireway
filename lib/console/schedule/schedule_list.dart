@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/console/schedule/schedule_list_view.dart';
-import 'package:hireway/respository/schedule_firestore.dart';
+import 'package:hireway/custom_fields/builders.dart';
+import 'package:hireway/respository/firestore/objects/schedule.dart';
+import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
 
 class SchedulesList extends ConsumerStatefulWidget {
   const SchedulesList({
@@ -22,8 +23,7 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<Schedule>> _streamController =
-      StreamController();
+  final SchedulesRepository _schedulesRepository = SchedulesRepository();
 
   @override
   void initState() {
@@ -33,11 +33,6 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _streamController.addStream(scheduleFirestore
-        .orderBy('startDateTime', descending: false)
-        .limit(10)
-        .snapshots());
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("Schedule is added successfully!");
     });
@@ -45,27 +40,13 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Schedule>>(
-        stream: _streamController.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+    Widget widgetBuilder(List<Schedule> schedules) {
+      return ScheduleListView(schedules: schedules);
+    }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-          final List<QueryDocumentSnapshot<Schedule>> schedules =
-              snapshot.requireData.docs;
-          print("snapshot downloaded ${snapshot.connectionState}");
-          return ScheduleListView(schedules: schedules);
-        });
+    // TODO    .orderBy('startDateTime', descending: false)
+    return withFutureBuilder(
+        future: _schedulesRepository.getAll(), widgetBuilder: widgetBuilder);
   }
 
   void _showOverlay(String successText) async {

@@ -4,12 +4,17 @@ class VirtualDB {
   final List<Map<String, dynamic>> _items = [];
   final List<String> _metadata = [];
 
-  static final VirtualDB _db = VirtualDB._privateConstructor();
+  static final Map<String, VirtualDB> _db = {
+    "candidates": VirtualDB._privateConstructor(),
+    "schedules": VirtualDB._privateConstructor(),
+    "roles": VirtualDB._privateConstructor(),
+    "users": VirtualDB._privateConstructor()
+  };
 
   VirtualDB._privateConstructor();
 
-  factory VirtualDB() {
-    return _db;
+  factory VirtualDB(String name) {
+    return _db[name]!;
   }
 
   Future<void> insert(Map<String, dynamic> item) async => _items.add(item);

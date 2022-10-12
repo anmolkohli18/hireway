@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,10 +6,12 @@ import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/auto_complete_multi_text_field.dart';
 import 'package:hireway/custom_fields/auto_complete_text_field.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/objects/round.dart';
+import 'package:hireway/respository/firestore/objects/schedule.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
-import 'package:hireway/respository/user_firestore.dart';
+import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
+import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/respository/rounds_firestore.dart';
-import 'package:hireway/respository/schedule_firestore.dart';
 import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';
@@ -39,6 +40,9 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
   bool _isFormEnabled = false;
 
   double _height = 620;
+
+  final SchedulesRepository _schedulesRepository = SchedulesRepository();
+  final UsersRepository _usersRepository = UsersRepository();
 
   final List<DropdownMenuItem<String>> _durationDropDown = const [
     DropdownMenuItem<String>(
@@ -97,12 +101,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
 
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
 
-    scheduleFirestore
-        .doc("$candidateEmail,${_startDateTime.toString()}")
-        .set(schedule, SetOptions(merge: true))
-        .then((value) => print("Schedule Added"))
-        .catchError((error) => print("Failed to add interviewer $error"));
-
+    _schedulesRepository.insert(schedule);
     _interviewers.split(",").forEach((interviewer) =>
         roundsFirestore(candidateEmail).doc(_startDateTime.toString()).set(
             Round(
@@ -186,7 +185,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
               ),
               AutoCompleteMultiTextField(
                 textFieldKey: _interviewersFieldKey,
-                kOptions: usersStream(),
+                kOptions: _usersRepository.usersList(),
                 onChanged: setInterviewers,
               ),
               const SizedBox(

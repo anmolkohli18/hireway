@@ -15,8 +15,8 @@ DocumentReference<Map<String, dynamic>> candidateMetaDocument(
 }
 
 DocumentReference<Map<String, dynamic>> roleDocument(
-    String businessName, String roleName) {
-  final documentPath = "clients/$businessName/roles/$roleName";
+    String businessName, String title) {
+  final documentPath = "clients/$businessName/roles/$title";
   final document = FirebaseFirestore.instance.doc(documentPath);
   return document;
 }
@@ -27,8 +27,29 @@ DocumentReference<Map<String, dynamic>> roleMetaDocument(String businessName) {
   return document;
 }
 
+DocumentReference<Map<String, dynamic>> scheduleDocument(
+    String businessName, String candidateEmail, DateTime startDateTime) {
+  final documentPath =
+      "clients/$businessName/schedules/$candidateEmail,${startDateTime.toString()}";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
+DocumentReference<Map<String, dynamic>> scheduleMetaDocument(
+    String businessName) {
+  final documentPath = "clients/$businessName/schedules/metadata";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
 DocumentReference<Map<String, dynamic>> userDocument(String userEmail) {
   final documentPath = "users/$userEmail";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
+DocumentReference<Map<String, dynamic>> userMetaDocument(String userEmail) {
+  final documentPath = "users/$userEmail/metadata";
   final document = FirebaseFirestore.instance.doc(documentPath);
   return document;
 }

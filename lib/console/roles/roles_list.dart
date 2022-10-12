@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/respository/roles_firestore.dart';
+import 'package:hireway/respository/firestore/objects/roles.dart';
+import 'package:hireway/respository/firestore/repositories/roles_repository.dart';
 import 'package:hireway/settings.dart';
 
 class RolesList extends ConsumerStatefulWidget {
@@ -26,8 +27,7 @@ class _RolesListState extends ConsumerState<RolesList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<Role>> _streamController =
-      StreamController();
+  final RolesRepository _rolesRepository = RolesRepository();
 
   @override
   void initState() {
@@ -37,47 +37,35 @@ class _RolesListState extends ConsumerState<RolesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _streamController.addStream(rolesFirestore
-        .orderBy('addedOnDateTime', descending: true)
-        .limit(10)
-        .snapshots());
+    // _streamController.addStream(rolesFirestore
+    //     .orderBy('addedOnDateTime', descending: true)
+    //     .limit(10)
+    //     .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("Role is added successfully!");
     });
   }
 
-  Widget listOfRoles(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Role>>(
-        stream: _streamController.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+  @override
+  Widget build(BuildContext context) {
+    Widget widgetBuilder(List<Role> roles) {
+      if (roles.isNotEmpty) {
+        return rolesListView(roles);
+      } else {
+        return overallEmptyState(context);
+      }
+    }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-          final List<QueryDocumentSnapshot<Role>> roles =
-              snapshot.requireData.docs;
-          if (roles.isNotEmpty) {
-            return rolesListView(roles);
-          } else {
-            return overallEmptyState(context);
-          }
-        });
+    // TODO   .orderBy('addedOnDateTime', descending: true)
+    return withFutureBuilder(
+        future: _rolesRepository.getAll(), widgetBuilder: widgetBuilder);
   }
 
-  Widget rolesListView(List<QueryDocumentSnapshot<Role>> roles) {
+  Widget rolesListView(List<Role> roles) {
     List<Widget> rolesWidgetList = [];
     for (var index = 0; index < roles.length; index++) {
-      Role role = roles[index].data();
+      Role role = roles[index];
       if (role.state == roleState) {
         rolesWidgetList.add(roleTile(
           index,
@@ -404,10 +392,5 @@ class _RolesListState extends ConsumerState<RolesList>
     await Future.delayed(const Duration(seconds: 3))
         .whenComplete(() => _animationController!.reverse())
         .whenComplete(() => successOverlayEntry.remove());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return listOfRoles(context);
   }
 }

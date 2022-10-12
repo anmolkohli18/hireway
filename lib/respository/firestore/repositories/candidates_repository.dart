@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hireway/firebase/firestore/firestore_collections.dart';
 import 'package:hireway/respository/firestore/firestore_converters.dart';
 import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/virtual/virtual_db.dart';
 
 class CandidatesRepository {
-  final VirtualDB _candidates = VirtualDB();
+  final VirtualDB _candidates = VirtualDB("candidates");
   late final StreamSubscription<QuerySnapshot<Map<String, dynamic>>>
       _candidatesSubscription;
 
@@ -31,26 +31,27 @@ class CandidatesRepository {
   }
 
   Future<Candidate?> getOne(String emailId) async {
+    await _repo._subscribe();
     final candidate = await _candidates.findOne("email", emailId);
     return candidate.isEmpty ? Candidate.fromJson(candidate) : null;
   }
 
   Future<void> insert(Candidate candidate) async {
-    String businessName = await _businessName();
-    final candidateDoc = withCandidateDocumentConverter(
-        candidateDocument(businessName, candidate.email));
-    candidateDoc.set(candidate);
+    await _repo._subscribe();
+    String businessName = await getBusinessName();
+    withCandidateDocumentConverter(
+            candidateDocument(businessName, candidate.email))
+        .set(candidate);
 
-    final CollectionReference<Map<String, dynamic>> candidatesCollection =
-        candidatesCollectionRef(businessName);
-    candidatesCollection.doc("metadata").set({
+    candidateMetaDocument(businessName).set({
       "candidates":
           FieldValue.arrayUnion(["${candidate.name},${candidate.email}"])
     }, SetOptions(merge: true));
   }
 
   Future<void> update(Candidate candidate) async {
-    String businessName = await _businessName();
+    await _repo._subscribe();
+    String businessName = await getBusinessName();
     final candidates = withCandidateDocumentConverter(
         candidateDocument(businessName, candidate.email));
     candidates.set(candidate, SetOptions(merge: true));
@@ -70,46 +71,11 @@ class CandidatesRepository {
   }
 
   Future<void> _candidatesSubscribe() async {
-    String businessName = await _businessName();
+    String businessName = await getBusinessName();
     final Stream<QuerySnapshot<Map<String, dynamic>>> candidates =
         candidatesCollectionRef(businessName).snapshots();
-    _candidatesSubscription = candidates.listen(populateVirtualDb);
+    _candidatesSubscription = candidates.listen((event) =>
+        populateVirtualDb(event, _candidates, "email", "candidates"));
     await candidates.first;
-  }
-
-  Future<void> populateVirtualDb(
-      QuerySnapshot<Map<String, dynamic>> event) async {
-    final List<DocumentChange<Map<String, dynamic>>> documentChanges =
-        event.docChanges;
-    for (int index = 0; index < documentChanges.length; index++) {
-      final Map<String, dynamic> document = documentChanges[index].doc.data()!;
-      if (document.containsKey("email")) {
-        switch (documentChanges[index].type) {
-          case DocumentChangeType.added:
-            _candidates.insert(document);
-            break;
-          case DocumentChangeType.modified:
-            _candidates.update(document, "email", document["email"]);
-            break;
-          case DocumentChangeType.removed:
-            _candidates.remove("email", document["email"]);
-            break;
-        }
-      } else {
-        final List<String> candidatesList =
-            (document["candidates"]! as List<dynamic>)
-                .map((e) => e! as String)
-                .toList();
-        _candidates.insertMetadata(candidatesList);
-      }
-    }
-  }
-
-  static Future<String> _businessName() async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final document =
-        await withUserDocConverter(userDocument(auth.currentUser!.email!))
-            .get();
-    return document.data()!.businessName;
   }
 }

@@ -1,13 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
-import 'package:hireway/respository/business_user_firestore.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
+import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/respository/send_email.dart';
-import 'package:hireway/respository/user_firestore.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 
@@ -33,6 +32,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
   bool _isFormEnabled = false;
 
   double _height = 655;
+  final UsersRepository _usersRepository = UsersRepository();
 
   Future<void> addUser() async {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -47,14 +47,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
         businessName: businessName,
         addedOnDateTime: now);
 
-    userFirestore
-        .doc(user.email)
-        .set(user, SetOptions(merge: true))
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user $error"));
-    userMetadata.set({
-      "users": FieldValue.arrayUnion(["${user.name},${user.email}"])
-    }, SetOptions(merge: true));
+    _usersRepository.insert(user);
   }
 
   Future<void> validateForm() async {

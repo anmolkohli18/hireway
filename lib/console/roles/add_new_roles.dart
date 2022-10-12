@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
-import 'package:hireway/respository/roles_firestore.dart';
+import 'package:hireway/respository/firestore/objects/roles.dart';
+import 'package:hireway/respository/firestore/repositories/roles_repository.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 
@@ -31,6 +31,8 @@ class _AddNewRoleState extends ConsumerState<AddNewRole> {
 
   double _height = 680;
 
+  final RolesRepository _rolesRepository = RolesRepository();
+
   Future<void> addRole() async {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());
@@ -43,14 +45,7 @@ class _AddNewRoleState extends ConsumerState<AddNewRole> {
         skills: _skills,
         addedOnDateTime: now);
 
-    rolesFirestore
-        .doc(role.title)
-        .set(role, SetOptions(merge: true))
-        .then((value) => print("Role Added"))
-        .catchError((error) => print("Failed to add role $error"));
-    rolesCollection.doc("metadata").set({
-      "roles": FieldValue.arrayUnion([role.title])
-    }, SetOptions(merge: true));
+    _rolesRepository.insert(role);
   }
 
   Future<void> validateForm() async {

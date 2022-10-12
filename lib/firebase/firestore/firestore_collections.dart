@@ -14,8 +14,7 @@ CollectionReference<Map<String, dynamic>> rolesCollectionRef(
   return collection;
 }
 
-Query<Map<String, dynamic>> usersCollectionRef(
-    String businessName) {
+Query<Map<String, dynamic>> usersCollectionRef(String businessName) {
   const collectionPath = "users";
   final collection = FirebaseFirestore.instance
       .collection(collectionPath)

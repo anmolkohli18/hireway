@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
-import 'package:hireway/respository/user_firestore.dart';
+import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/settings.dart';
 
 class UsersList extends ConsumerStatefulWidget {
@@ -27,8 +27,7 @@ class _UsersListState extends ConsumerState<UsersList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<HirewayUser>> _streamController =
-      StreamController();
+  final UsersRepository _usersRepository = UsersRepository();
 
   @override
   void initState() {
@@ -38,47 +37,35 @@ class _UsersListState extends ConsumerState<UsersList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _streamController.addStream(userFirestore
-        .orderBy('addedOnDateTime', descending: true)
-        .limit(10)
-        .snapshots());
+    // _streamController.addStream(userFirestore
+    //     .orderBy('addedOnDateTime', descending: true)
+    //     .limit(10)
+    //     .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("User is added successfully!");
     });
   }
 
-  Widget listOfUsers(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<HirewayUser>>(
-        stream: _streamController.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+  @override
+  Widget build(BuildContext context) {
+    Widget widgetBuilder(List<HirewayUser> users) {
+      if (users.isNotEmpty) {
+        return usersListView(users);
+      } else {
+        return overallEmptyState(context);
+      }
+    }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-          final List<QueryDocumentSnapshot<HirewayUser>> users =
-              snapshot.requireData.docs;
-          if (users.isNotEmpty) {
-            return usersListView(users);
-          } else {
-            return overallEmptyState(context);
-          }
-        });
+    // TODO    .orderBy('addedOnDateTime', descending: true)
+    return withFutureBuilder(
+        future: _usersRepository.getAll(), widgetBuilder: widgetBuilder);
   }
 
-  Widget usersListView(List<QueryDocumentSnapshot<HirewayUser>> users) {
+  Widget usersListView(List<HirewayUser> users) {
     List<Widget> usersWidgetList = [];
     for (var index = 0; index < users.length; index++) {
-      HirewayUser user = users[index].data();
+      HirewayUser user = users[index];
       if (isAvailable == user.available) {
         usersWidgetList.add(userTile(
           index,
@@ -404,10 +391,5 @@ class _UsersListState extends ConsumerState<UsersList>
     await Future.delayed(const Duration(seconds: 3))
         .whenComplete(() => _animationController!.reverse())
         .whenComplete(() => successOverlayEntry.remove());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return listOfUsers(context);
   }
 }

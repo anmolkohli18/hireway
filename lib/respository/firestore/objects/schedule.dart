@@ -1,14 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-final _scheduleCollection = FirebaseFirestore.instance
-    .collection("clients")
-    .doc("client-name")
-    .collection("schedule");
-
-final scheduleFirestore = _scheduleCollection.withConverter(
-    fromFirestore: (snapshots, _) => Schedule.fromJson(snapshots.data()!),
-    toFirestore: (schedule, _) => schedule.toJson());
 
 @immutable
 class Schedule {

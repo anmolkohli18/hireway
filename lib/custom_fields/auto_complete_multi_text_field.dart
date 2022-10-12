@@ -8,7 +8,7 @@ class AutoCompleteMultiTextField extends StatefulWidget {
       required this.kOptions,
       required this.onChanged});
   final Key textFieldKey;
-  final Stream<List<String>> kOptions;
+  final Future<List<String>> kOptions;
   final Function(List<String>) onChanged;
 
   @override
@@ -23,8 +23,8 @@ class _AutoCompleteMultiTextFieldState
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<String>>(
-        stream: widget.kOptions,
+    return FutureBuilder<List<String>>(
+        future: widget.kOptions,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -37,8 +37,6 @@ class _AutoCompleteMultiTextFieldState
               : ["Anmol Kohli <anmol.kohli18@gmail.com>"];
           final TextEditingController typeAheadController =
               TextEditingController();
-
-          print(options.length);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,

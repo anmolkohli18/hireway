@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/respository/schedule_firestore.dart';
+import 'package:hireway/respository/firestore/objects/schedule.dart';
 import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';
@@ -10,7 +9,7 @@ import 'package:intl/intl.dart';
 class ScheduleListView extends StatefulWidget {
   const ScheduleListView({super.key, required this.schedules});
 
-  final List<QueryDocumentSnapshot<Schedule>> schedules;
+  final List<Schedule> schedules;
 
   @override
   State<ScheduleListView> createState() => _ScheduleListViewState();
@@ -282,7 +281,7 @@ class _ScheduleListViewState extends State<ScheduleListView> {
   Widget schedulesListView() {
     List<Widget> schedulesWidgetList = [];
     for (var index = 0; index < widget.schedules.length; index++) {
-      Schedule schedule = widget.schedules[index].data();
+      Schedule schedule = widget.schedules[index];
       if (shouldAddSchedule(schedule)) {
         schedulesWidgetList.add(scheduleTile(
           index,

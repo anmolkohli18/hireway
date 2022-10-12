@@ -10,6 +10,7 @@ import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
 import 'package:hireway/respository/rounds_firestore.dart';
 import 'package:hireway/settings.dart';
@@ -57,7 +58,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
 
   @override
   Widget build(BuildContext context) {
-    widgetBuilder(List<Candidate> candidates) {
+    Widget widgetBuilder(List<Candidate> candidates) {
       if (candidates.isNotEmpty) {
         return candidatesListView(candidates);
       } else {

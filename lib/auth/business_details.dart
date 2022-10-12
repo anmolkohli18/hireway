@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
 import 'package:hireway/respository/business_user_firestore.dart';
+import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/settings.dart';
+import 'package:intl/intl.dart';
 
 class GetOnboardingDetailsForm extends StatefulWidget {
   const GetOnboardingDetailsForm({Key? key}) : super(key: key);
@@ -24,8 +27,9 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
   final _businessNameFieldKey = GlobalKey<FormFieldState>();
 
   bool _isFormEnabled = false;
-
   double _height = 650;
+
+  final UsersRepository _usersRepository = UsersRepository();
 
   void validateFormField(GlobalKey<FormFieldState> formFieldKey) {
     if (formFieldKey.currentState!.validate()) {
@@ -51,6 +55,24 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
         _isFormEnabled = false;
       });
     }
+  }
+
+  void addClient(String businessName, String userEmail, String userName,
+      String userRole, String userSkills) {
+    // TODO check if required
+    clientCollection.doc(businessName).set({});
+
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    String now = dateFormat.format(DateTime.now());
+
+    HirewayUser user = HirewayUser(
+        name: userName,
+        email: userEmail,
+        skills: userSkills,
+        available: true,
+        businessName: businessName,
+        addedOnDateTime: now);
+    _usersRepository.insert(user);
   }
 
   @override

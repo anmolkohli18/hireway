@@ -7,6 +7,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/helper/regex_functions.dart';
+import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:hireway/console/candidate/hire_reject_interview.dart';
