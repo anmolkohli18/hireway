@@ -167,6 +167,7 @@ class _ScheduleListViewState extends State<ScheduleListView> {
 
   Widget scheduleTile(int index, String candidateInfo, String interviewers,
       DateTime startDateTime, String duration, String addedOnDateTime) {
+    print("candidateInfo $candidateInfo");
     return InkWell(
       // TODO add logic for ontap
       onTap: () {},

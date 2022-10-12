@@ -8,7 +8,8 @@ class VirtualDB {
     "candidates": VirtualDB._privateConstructor(),
     "schedules": VirtualDB._privateConstructor(),
     "roles": VirtualDB._privateConstructor(),
-    "users": VirtualDB._privateConstructor()
+    "users": VirtualDB._privateConstructor(),
+    "rounds": VirtualDB._privateConstructor()
   };
 
   VirtualDB._privateConstructor();

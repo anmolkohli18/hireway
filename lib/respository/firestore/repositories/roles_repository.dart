@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hireway/firebase/firestore/firestore_collections.dart';
+import 'package:hireway/respository/firestore/firestore_collections.dart';
 import 'package:hireway/respository/firestore/firestore_converters.dart';
 import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/respository/firestore/objects/roles.dart';
 import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/virtual/virtual_db.dart';
+import 'package:synchronized/synchronized.dart';
 
 class RolesRepository {
   final VirtualDB _roles = VirtualDB("roles");
@@ -14,6 +15,7 @@ class RolesRepository {
       _rolesSubscription;
 
   bool _subscribed = false;
+  final Lock _lock = Lock();
 
   static final RolesRepository _repo = RolesRepository._privateConstructor();
 
@@ -32,7 +34,7 @@ class RolesRepository {
   Future<Role?> getOne(String title) async {
     await _repo._subscribe();
     final role = await _roles.findOne("title", title);
-    return role.isEmpty ? Role.fromJson(role) : null;
+    return role.isNotEmpty ? Role.fromJson(role) : null;
   }
 
   Future<void> insert(Role role) async {
@@ -53,13 +55,18 @@ class RolesRepository {
     roles.set(role, SetOptions(merge: true));
   }
 
-  Future<List<String>> rolesList() => _roles.getMetadata();
+  Future<List<String>> rolesList() async {
+    await _repo._subscribe();
+    return _roles.getMetadata();
+  }
 
   Future<void> _subscribe() async {
-    if (!_subscribed) {
-      await _rolesSubscribe();
-      _subscribed = true;
-    }
+    await _lock.synchronized(() async {
+      if (!_subscribed) {
+        await _rolesSubscribe();
+        _subscribed = true;
+      }
+    });
   }
 
   Future<void> _unsubscribe() async {
@@ -70,8 +77,15 @@ class RolesRepository {
     String businessName = await getBusinessName();
     final Stream<QuerySnapshot<Map<String, dynamic>>> roles =
         rolesCollectionRef(businessName).snapshots();
-    _rolesSubscription = roles
-        .listen((event) => populateVirtualDb(event, _roles, "title", "roles"));
+    _rolesSubscription =
+        roles.listen((event) => populateVirtualDb(event, _roles, "title"));
+
+    final Stream<DocumentSnapshot<Map<String, dynamic>>> rolesMetadata =
+        roleMetaDocument(businessName).snapshots();
+    rolesMetadata
+        .listen((event) => populateMetadataVirtualDB(event, _roles, "roles"));
+
     await roles.first;
+    await rolesMetadata.first;
   }
 }

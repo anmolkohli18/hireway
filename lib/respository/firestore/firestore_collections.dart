@@ -14,16 +14,24 @@ CollectionReference<Map<String, dynamic>> rolesCollectionRef(
   return collection;
 }
 
-CollectionReference<Map<String, dynamic>> usersCollectionRef(
+Query<Map<String, dynamic>> usersCollectionRef(String businessName) {
+  const collectionPath = "users";
+  final collection = FirebaseFirestore.instance
+      .collection(collectionPath)
+      .where("businessName", isEqualTo: businessName);
+  return collection;
+}
+
+CollectionReference<Map<String, dynamic>> schedulesCollectionRef(
     String businessName) {
-  const collectionPath = "clients/users";
+  final collectionPath = "clients/$businessName/schedules";
   final collection = FirebaseFirestore.instance.collection(collectionPath);
   return collection;
 }
 
-CollectionReference<Map<String, dynamic>> scheduleCollectionRef(
+CollectionReference<Map<String, dynamic>> roundsCollectionRef(
     String businessName) {
-  final collectionPath = "clients/$businessName/schedules";
+  final collectionPath = "clients/$businessName/rounds";
   final collection = FirebaseFirestore.instance.collection(collectionPath);
   return collection;
 }

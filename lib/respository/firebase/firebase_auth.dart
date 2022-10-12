@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hireway/main.dart';
 
-String whoAmI() => "${getCurrentUserName()} <${getCurrentUserEmail()}>";
+String whoAmI() => "${getCurrentUserName()},${getCurrentUserEmail()}";
 
 String getCurrentUserName() {
   final auth = FirebaseAuth.instance;
@@ -14,10 +13,7 @@ String getCurrentUserEmail() {
   return auth.currentUser!.email!;
 }
 
-bool isLoggedIn(WidgetRef ref) {
-  final auth = ref.watch(authStateChangesProvider);
-  return auth.asData?.value?.uid != null;
-}
+bool isLoggedIn(WidgetRef ref) => FirebaseAuth.instance.currentUser != null;
 
 void updateDisplayName(String userName) {
   User? user = FirebaseAuth.instance.currentUser;

@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hireway/firebase/firestore/firestore_collections.dart';
+import 'package:hireway/respository/firestore/firestore_collections.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/respository/firestore/firestore_converters.dart';
 import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/respository/firestore/objects/schedule.dart';
 import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/virtual/virtual_db.dart';
+import 'package:synchronized/synchronized.dart';
 
 class SchedulesRepository {
   final VirtualDB _schedules = VirtualDB("schedules");
@@ -15,6 +16,7 @@ class SchedulesRepository {
       _schedulesSubscription;
 
   bool _subscribed = false;
+  final Lock _lock = Lock();
 
   static final SchedulesRepository _repo =
       SchedulesRepository._privateConstructor();
@@ -34,7 +36,7 @@ class SchedulesRepository {
   Future<Schedule?> getOne(String startDateTime) async {
     await _repo._subscribe();
     final schedule = await _schedules.findOne("startDateTime", startDateTime);
-    return schedule.isEmpty ? Schedule.fromJson(schedule) : null;
+    return schedule.isNotEmpty ? Schedule.fromJson(schedule) : null;
   }
 
   Future<void> insert(Schedule schedule) async {
@@ -60,13 +62,18 @@ class SchedulesRepository {
     schedules.set(schedule, SetOptions(merge: true));
   }
 
-  Future<List<String>> schedulesList() => _schedules.getMetadata();
+  Future<List<String>> schedulesList() async {
+    await _repo._subscribe();
+    return _schedules.getMetadata();
+  }
 
   Future<void> _subscribe() async {
-    if (!_subscribed) {
-      await _schedulesSubscribe();
-      _subscribed = true;
-    }
+    await _lock.synchronized(() async {
+      if (!_subscribed) {
+        await _schedulesSubscribe();
+        _subscribed = true;
+      }
+    });
   }
 
   Future<void> _unsubscribe() async {
@@ -76,9 +83,16 @@ class SchedulesRepository {
   Future<void> _schedulesSubscribe() async {
     String businessName = await getBusinessName();
     final Stream<QuerySnapshot<Map<String, dynamic>>> schedules =
-        scheduleCollectionRef(businessName).snapshots();
-    _schedulesSubscription = schedules.listen((event) =>
-        populateVirtualDb(event, _schedules, "candidateInfo", "schedules"));
+        schedulesCollectionRef(businessName).snapshots();
+    _schedulesSubscription = schedules.listen(
+        (event) => populateVirtualDb(event, _schedules, "candidateInfo"));
+
+    final Stream<DocumentSnapshot<Map<String, dynamic>>> schedulesMetadata =
+        scheduleMetaDocument(businessName).snapshots();
+    schedulesMetadata.listen(
+        (event) => populateMetadataVirtualDB(event, _schedules, "schedules"));
+
     await schedules.first;
+    await schedulesMetadata.first;
   }
 }

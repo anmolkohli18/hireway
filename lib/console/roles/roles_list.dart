@@ -37,11 +37,6 @@ class _RolesListState extends ConsumerState<RolesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    // _streamController.addStream(rolesFirestore
-    //     .orderBy('addedOnDateTime', descending: true)
-    //     .limit(10)
-    //     .snapshots());
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _showOverlay("Role is added successfully!");
     });

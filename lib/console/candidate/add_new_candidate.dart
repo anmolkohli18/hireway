@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
-import 'package:hireway/respository/firestore_database.dart';
-import 'package:hireway/main.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';

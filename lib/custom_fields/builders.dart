@@ -27,7 +27,13 @@ StreamBuilder withStreamBuilder<T>(
 }
 
 FutureBuilder withFutureBuilder<T>(
-    {required Future<T> future, required Widget Function(T) widgetBuilder}) {
+    {required Future<T> future,
+    required Widget Function(T) widgetBuilder,
+    Widget emptyWidget = const Center(
+      child: CircularProgressIndicator(
+        color: Colors.black45,
+      ),
+    )}) {
   return FutureBuilder<T>(
       future: future,
       builder: ((context, snapshot) {
@@ -38,11 +44,7 @@ FutureBuilder withFutureBuilder<T>(
         }
 
         if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Colors.black45,
-            ),
-          );
+          return emptyWidget;
         }
 
         final T documents = snapshot.requireData;

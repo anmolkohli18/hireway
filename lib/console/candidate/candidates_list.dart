@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:clipboard/clipboard.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +11,7 @@ import 'package:hireway/custom_fields/highlighted_tag.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
-import 'package:hireway/respository/rounds_firestore.dart';
+import 'package:hireway/respository/firestore/repositories/rounds_repository.dart';
 import 'package:hireway/settings.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -34,6 +33,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
   Animation<double>? _animation;
 
   final CandidatesRepository _candidatesRepository = CandidatesRepository();
+  final RoundsRepository _roundsRepository = RoundsRepository();
 
   @override
   void initState() {
@@ -42,11 +42,6 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
-
-    // _candidateStreamController.addStream(candidatesFirestore
-    //     .orderBy('addedOnDateTime', descending: true)
-    //     .limit(10)
-    //     .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (ref.watch(candidatesStateProvider.state).state ==
@@ -427,7 +422,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     );
   }
 
-  Widget ratings(int rating) {
+  Widget ratings(double rating) {
     List<Widget> ratingIcons = [];
     for (int index = 0; index < 5; index++) {
       ratingIcons.add(Icon(
@@ -442,65 +437,53 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
   }
 
   Widget latestReviewAndRating(String email) {
-    return StreamBuilder<QuerySnapshot<Round>>(
-        stream: roundsFirestore(email)
-            .orderBy("scheduledOn", descending: true)
-            .limit(10)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
+    return withFutureBuilder(
+        future: _roundsRepository.getOne("email", email),
+        widgetBuilder: latestRoundReviewWidget,
+        emptyWidget: Container());
+  }
 
-          if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
-            return Container();
-          }
-
-          final reviewDocuments = snapshot.requireData.docs;
-          for (int index = 0; index < reviewDocuments.length; index++) {
-            Round round = reviewDocuments[index].data();
-            if (round.review.isNotEmpty) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                    border: round.rating >= 4
-                        ? Border.all(color: Colors.green.shade300)
-                        : round.rating <= 2
-                            ? Border.all(color: Colors.red.shade300)
-                            : Border.all(color: Colors.black38)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ratings(round.rating),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      width: 400,
-                      child: Text(
-                        round.review,
-                        maxLines: 2,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.w400),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    Text(
-                      round.interviewer,
-                      style: const TextStyle(
-                          color: Colors.black54, fontWeight: FontWeight.w400),
-                    )
-                  ],
-                ),
-              );
-            }
-          }
-          return Container();
-        });
+  Widget latestRoundReviewWidget(Round? round) {
+    if (round != null && round.review.isNotEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+            border: round.rating >= 4
+                ? Border.all(color: Colors.green.shade300)
+                : round.rating <= 2
+                    ? Border.all(color: Colors.red.shade300)
+                    : Border.all(color: Colors.black38)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ratings(round.rating),
+            const SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              width: 400,
+              child: Text(
+                round.review,
+                maxLines: 2,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.w400),
+              ),
+            ),
+            const SizedBox(
+              height: 6,
+            ),
+            Text(
+              round.interviewer,
+              style: const TextStyle(
+                  color: Colors.black54, fontWeight: FontWeight.w400),
+            )
+          ],
+        ),
+      );
+    }
+    return Container();
   }
 
   void _showOverlay(String successText) async {

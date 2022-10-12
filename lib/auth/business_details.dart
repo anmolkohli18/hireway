@@ -1,7 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
-import 'package:hireway/respository/business_user_firestore.dart';
+import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
 import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/settings.dart';
@@ -59,8 +58,7 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
 
   void addClient(String businessName, String userEmail, String userName,
       String userRole, String userSkills) {
-    // TODO check if required
-    clientCollection.doc(businessName).set({});
+    clientDocument(businessName).set({});
 
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());

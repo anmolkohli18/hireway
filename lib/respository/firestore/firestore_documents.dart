@@ -1,5 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+DocumentReference<Map<String, dynamic>> clientDocument(String businessName) {
+  final documentPath = "clients/$businessName";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
 DocumentReference<Map<String, dynamic>> candidateDocument(
     String businessName, String candidateEmail) {
   final documentPath = "clients/$businessName/candidates/$candidateEmail";
@@ -48,8 +54,21 @@ DocumentReference<Map<String, dynamic>> userDocument(String userEmail) {
   return document;
 }
 
-DocumentReference<Map<String, dynamic>> userMetaDocument(String userEmail) {
-  final documentPath = "users/$userEmail/metadata";
+DocumentReference<Map<String, dynamic>> userMetaDocument(String businessName) {
+  final documentPath = "clients/$businessName/userMetadata/metadata";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
+DocumentReference<Map<String, dynamic>> roundDocument(
+    String businessName, String roundId) {
+  final documentPath = "clients/$businessName/rounds/$roundId";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
+DocumentReference<Map<String, dynamic>> roundMetaDocument(String businessName) {
+  final documentPath = "clients/$businessName/rounds/metadata";
   final document = FirebaseFirestore.instance.doc(documentPath);
   return document;
 }

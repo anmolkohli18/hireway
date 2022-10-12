@@ -9,9 +9,9 @@ import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/objects/schedule.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/firestore/repositories/rounds_repository.dart';
 import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
 import 'package:hireway/respository/firestore/repositories/users_repository.dart';
-import 'package:hireway/respository/rounds_firestore.dart';
 import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';
@@ -43,6 +43,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
 
   final SchedulesRepository _schedulesRepository = SchedulesRepository();
   final UsersRepository _usersRepository = UsersRepository();
+  final RoundsRepository _roundsRepository = RoundsRepository();
 
   final List<DropdownMenuItem<String>> _durationDropDown = const [
     DropdownMenuItem<String>(
@@ -82,7 +83,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
 
   void setInterviewers(List<String> interviewers) {
     setState(() {
-      _interviewers = interviewers.join(",");
+      _interviewers = interviewers.join("|");
       _height = _height + 28;
     });
     validateFormField(_interviewersFieldKey);
@@ -100,16 +101,42 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
         addedOnDateTime: now);
 
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
-
     _schedulesRepository.insert(schedule);
-    _interviewers.split(",").forEach((interviewer) =>
-        roundsFirestore(candidateEmail).doc(_startDateTime.toString()).set(
-            Round(
-                scheduledOn: _startDateTime.toString(),
-                interviewer: interviewer,
-                rating: 0,
-                review: "")));
-    ;
+
+    print(_interviewers);
+    _interviewers.split("|").forEach((interviewer) {
+      print(interviewer);
+      Round round = Round(
+          uid: "$candidateEmail,$interviewer,${_startDateTime.toString()}",
+          candidateInfo: schedule.candidateInfo,
+          scheduledOn: _startDateTime.toString(),
+          interviewer: interviewer,
+          rating: 0,
+          review: "");
+      print("adding empty round");
+      _roundsRepository.insert(round);
+    });
+
+    _updateCandidatesInterviewStage();
+
+    ref.read(scheduleStateProvider.notifier).state =
+        SchedulesState.newScheduleAdded;
+  }
+
+  Future<void> _updateCandidatesInterviewStage() async {
+    final emailId = getEmailFromInfo(_candidateInfo);
+    final candidatesRepository = CandidatesRepository();
+    Candidate? candidate = await candidatesRepository.getOne(emailId);
+    print("emailId $emailId ${candidate == null}");
+    Map<String, dynamic> candidateJson = candidate!.toJson();
+    print("candidate json");
+    candidateJson["interviewStage"] = "ongoing";
+    print("set candidate json");
+    Candidate newCandidate = Candidate.fromJson(candidateJson);
+    print("new candidate");
+    candidatesRepository.update(newCandidate);
+    print("update repository");
+    print("new schedule added");
   }
 
   Future<void> validateForm() async {
@@ -292,23 +319,6 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                         onPressed: _isFormEnabled
                             ? () {
                                 addSchedule().then((value) {
-                                  final emailId =
-                                      getEmailFromInfo(_candidateInfo);
-                                  final candidatesRepository =
-                                      CandidatesRepository();
-                                  candidatesRepository
-                                      .getOne(emailId)
-                                      .then((Candidate? candidate) {
-                                    Map<String, dynamic> candidateJson =
-                                        candidate!.toJson();
-                                    candidateJson["interviewStage"] = "ongoing";
-                                    Candidate newCandidate =
-                                        Candidate.fromJson(candidateJson);
-                                    candidatesRepository.update(newCandidate);
-                                  });
-                                  ref
-                                      .read(scheduleStateProvider.notifier)
-                                      .state = SchedulesState.newScheduleAdded;
                                   Navigator.pushNamed(context, '/schedules');
                                 });
                               }

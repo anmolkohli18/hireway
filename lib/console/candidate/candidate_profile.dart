@@ -1,19 +1,19 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/firestore/repositories/rounds_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:hireway/console/candidate/hire_reject_interview.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
-import 'package:hireway/respository/rounds_firestore.dart';
 import 'package:hireway/helper/stateless_functions.dart';
 import 'package:hireway/settings.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,12 +33,11 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   String _latestRoundReview = "";
   double _rating = 0;
 
-  QueryDocumentSnapshot<Round>? _pendingReviewDocument;
+  Round? _pendingReviewDocument;
 
   final CandidatesRepository _candidatesRepository = CandidatesRepository();
 
-  final StreamController<QuerySnapshot<Round>> _streamController =
-      StreamController();
+  final RoundsRepository _roundsRepository = RoundsRepository();
 
   final _formKey = GlobalKey<FormState>();
   bool _isFormEnabled = false;
@@ -77,25 +76,17 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   void initState() {
     super.initState();
 
-    _streamController.addStream(roundsFirestore(widget.email)
-        .orderBy("scheduledOn", descending: true)
-        .limit(10)
-        .snapshots());
-
-    roundsFirestore(widget.email)
-        .where("interviewer", isEqualTo: whoAmI())
-        .where("review", isEqualTo: "")
-        .get()
-        .then((value) {
-      if (value.docs.isNotEmpty) {
-        setState(() {
-          _pendingReviewDocument = value.docs.first;
-        });
-      }
+    _roundsRepository.getAllWhere("interviewer", whoAmI()).then((rounds) {
+      setState(() {
+        final Iterable<Round> emptyRounds =
+            rounds.where((Round element) => element.review.isEmpty);
+        _pendingReviewDocument =
+            emptyRounds.isNotEmpty ? emptyRounds.first : null;
+      });
     });
   }
 
-  Widget ratings(int rating) {
+  Widget ratings(double rating) {
     List<Widget> ratingIcons = [];
     for (int index = 0; index < 5; index++) {
       ratingIcons.add(Icon(
@@ -110,89 +101,78 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   }
 
   Widget reviewsAndRatings(String email) {
-    return StreamBuilder<QuerySnapshot<Round>>(
-        stream: _streamController.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+    return withFutureBuilder(
+        future: _roundsRepository.getAllWhere("email", email),
+        widgetBuilder: roundsListView);
+  }
 
-          if (!snapshot.hasData || snapshot.requireData.docs.isEmpty) {
-            return Container();
-          }
-
-          final rounds = snapshot.requireData.docs;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    "All Reviews",
-                    style: heading2,
-                  )),
-              ListView.separated(
-                  shrinkWrap: true,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemCount: rounds.length,
-                  itemBuilder: ((context, index) {
-                    Round round = rounds[index].data();
-                    if (round.review.isNotEmpty) {
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                            border: round.rating >= 4
-                                ? Border.all(color: Colors.green.shade300)
-                                : round.rating <= 2
-                                    ? Border.all(color: Colors.red.shade300)
-                                    : Border.all(color: Colors.black38)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ratings(round.rating),
-                                Text(
-                                  DateFormat("dd MMMM hh:mm a").format(
-                                      DateTime.parse(round.scheduledOn)),
-                                  style: subHeading,
-                                )
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              round.review,
-                              maxLines: 5,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                            const SizedBox(
-                              height: 6,
-                            ),
-                            Text(
-                              round.interviewer,
-                              style: const TextStyle(
-                                  color: Colors.black54,
-                                  fontWeight: FontWeight.w400),
-                            )
-                          ],
-                        ),
-                      );
-                    } else {
-                      return Container();
-                    }
-                  })),
-            ],
-          );
-        });
+  Widget roundsListView(List<Round> rounds) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              "All Reviews",
+              style: heading2,
+            )),
+        ListView.separated(
+            shrinkWrap: true,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemCount: rounds.length,
+            itemBuilder: ((context, index) {
+              Round round = rounds[index];
+              if (round.review.isNotEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      border: round.rating >= 4
+                          ? Border.all(color: Colors.green.shade300)
+                          : round.rating <= 2
+                              ? Border.all(color: Colors.red.shade300)
+                              : Border.all(color: Colors.black38)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ratings(round.rating),
+                          Text(
+                            DateFormat("dd MMMM hh:mm a")
+                                .format(DateTime.parse(round.scheduledOn)),
+                            style: subHeading,
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        round.review,
+                        maxLines: 5,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.w400),
+                      ),
+                      const SizedBox(
+                        height: 6,
+                      ),
+                      Text(
+                        round.interviewer,
+                        style: const TextStyle(
+                            color: Colors.black54, fontWeight: FontWeight.w400),
+                      )
+                    ],
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            })),
+      ],
+    );
   }
 
   Widget pendingReviews() {
@@ -205,7 +185,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15),
                   child: Text(
-                    "Review for interview on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(_pendingReviewDocument!.data().scheduledOn))}",
+                    "Review for interview on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(_pendingReviewDocument!.scheduledOn))}",
                     style: heading2,
                   ),
                 ),
@@ -261,13 +241,17 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
                 ElevatedButton(
                     onPressed: _isFormEnabled
                         ? () {
-                            // TODO add rating field and update rating below
-                            roundsFirestore(widget.email)
-                                .doc(_pendingReviewDocument!.id)
-                                .update({
-                              "rating": _rating,
-                              "review": _latestRoundReview
-                            });
+                            Round updatedRound = Round(
+                                candidateInfo:
+                                    _pendingReviewDocument!.candidateInfo,
+                                interviewer:
+                                    _pendingReviewDocument!.interviewer,
+                                rating: _rating,
+                                review: _latestRoundReview,
+                                scheduledOn:
+                                    _pendingReviewDocument!.scheduledOn,
+                                uid: _pendingReviewDocument!.uid);
+                            _roundsRepository.update(updatedRound);
                             setState(() {
                               _pendingReviewDocument = null;
                             });
@@ -396,125 +380,110 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
         const TextStyle(color: Colors.white), Colors.black54);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Candidate?>(
-        future: _candidatesRepository.getOne(widget.email),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-
-          final Candidate candidateInfo = snapshot.requireData!;
-          return Padding(
-            padding: const EdgeInsets.only(top: 80.0, left: 80),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget candidateProfileBuilder(Candidate? candidateInfo) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 80.0, left: 80),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 80.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 80.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.name,
-                        style: heading1,
-                      ),
-                      candidateInterviewStage(candidateInfo.interviewStage),
-                    ],
-                  ),
-                ),
                 Text(
-                  widget.email,
-                  style: subHeading,
+                  widget.name,
+                  style: heading1,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                isHired(candidateInfo.interviewStage)
-                    ? highlightedMessage(
-                        "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
-                        const TextStyle(color: Colors.black),
-                        Colors.grey.shade300,
-                        successColor)
-                    : Container(),
-                isRejected(candidateInfo.interviewStage)
-                    ? highlightedMessage(
-                        "Candidate was rejected on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
-                        const TextStyle(color: Colors.black),
-                        Colors.grey.shade300,
-                        failedColor)
-                    : Container(),
-                const SizedBox(
-                  height: 30,
-                ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height < 680
-                      ? MediaQuery.of(context).size.height * 0.6
-                      : MediaQuery.of(context).size.height * 0.7,
-                  child: ListView.separated(
-                    shrinkWrap: false,
-                    separatorBuilder: (_, __) => const SizedBox(height: 30),
-                    itemCount: 4,
-                    itemBuilder: (context, index) {
-                      switch (index) {
-                        case 0:
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 80.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                    child: candidateInfoWidget(candidateInfo)),
-                                const SizedBox(
-                                  width: 50,
-                                ),
-                                !isRejected(candidateInfo.interviewStage) &&
-                                        !isHired(candidateInfo.interviewStage)
-                                    ? SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.3,
-                                        child: HireRejectInterview(
-                                            name: widget.name,
-                                            email: widget.email,
-                                            interviewStage:
-                                                candidateInfo.interviewStage),
-                                      )
-                                    : Container()
-                              ],
-                            ),
-                          );
-                        case 1:
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 80.0),
-                            child: pendingReviews(),
-                          );
-                        case 2:
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 80.0),
-                            child: reviewsAndRatings(widget.email),
-                          );
-                      }
-                      return const SizedBox(
-                        height: 30,
-                      );
-                    },
-                  ),
-                ),
+                candidateInterviewStage(candidateInfo!.interviewStage),
               ],
             ),
-          );
-        });
+          ),
+          Text(
+            widget.email,
+            style: subHeading,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          isHired(candidateInfo.interviewStage)
+              ? highlightedMessage(
+                  "Candidate was hired on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
+                  const TextStyle(color: Colors.black),
+                  Colors.grey.shade300,
+                  successColor)
+              : Container(),
+          isRejected(candidateInfo.interviewStage)
+              ? highlightedMessage(
+                  "Candidate was rejected on ${DateFormat("dd MMMM hh:mm a").format(DateTime.parse(candidateInfo.hiredOrRejectedOn))} by ${getNameFromInfo(candidateInfo.hiringManager)}",
+                  const TextStyle(color: Colors.black),
+                  Colors.grey.shade300,
+                  failedColor)
+              : Container(),
+          const SizedBox(
+            height: 30,
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height < 680
+                ? MediaQuery.of(context).size.height * 0.6
+                : MediaQuery.of(context).size.height * 0.7,
+            child: ListView.separated(
+              shrinkWrap: false,
+              separatorBuilder: (_, __) => const SizedBox(height: 30),
+              itemCount: 4,
+              itemBuilder: (context, index) {
+                switch (index) {
+                  case 0:
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 80.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(child: candidateInfoWidget(candidateInfo)),
+                          const SizedBox(
+                            width: 50,
+                          ),
+                          !isRejected(candidateInfo.interviewStage) &&
+                                  !isHired(candidateInfo.interviewStage)
+                              ? SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.3,
+                                  child: HireRejectInterview(
+                                      name: widget.name,
+                                      email: widget.email,
+                                      interviewStage:
+                                          candidateInfo.interviewStage),
+                                )
+                              : Container()
+                        ],
+                      ),
+                    );
+                  case 1:
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 80.0),
+                      child: pendingReviews(),
+                    );
+                  case 2:
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 80.0),
+                      child: reviewsAndRatings(widget.email),
+                    );
+                }
+                return const SizedBox(
+                  height: 30,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return withFutureBuilder(
+        future: _candidatesRepository.getOne(widget.email),
+        widgetBuilder: candidateProfileBuilder);
   }
 }

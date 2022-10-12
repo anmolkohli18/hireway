@@ -84,10 +84,14 @@ class _AppConsoleState extends ConsumerState<AppConsole> {
 
   MyCustomRoute appConsoleRoute(RouteSettings settings) {
     if (settings.name == '/home') {
-      ref.read(selectedMenuProvider.notifier).state = 0;
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ref.read(selectedMenuProvider.notifier).state = 0;
+      });
       return routing(const Expanded(child: Homepage()), settings.name);
     } else if (settings.name!.startsWith('/candidates')) {
-      ref.read(selectedMenuProvider.notifier).state = 1;
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ref.read(selectedMenuProvider.notifier).state = 1;
+      });
       if (settings.name == '/candidates') {
         return routing(const Expanded(child: CandidatesList()), settings.name);
       } else if (settings.name == '/candidates/new') {
@@ -105,7 +109,9 @@ class _AppConsoleState extends ConsumerState<AppConsole> {
             settings.name);
       }
     } else if (settings.name!.startsWith('/schedules')) {
-      ref.read(selectedMenuProvider.notifier).state = 2;
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ref.read(selectedMenuProvider.notifier).state = 2;
+      });
       if (settings.name == '/schedules') {
         return routing(const Expanded(child: SchedulesList()), settings.name);
       } else if (settings.name == '/schedules/new') {
@@ -120,21 +126,27 @@ class _AppConsoleState extends ConsumerState<AppConsole> {
             settings.name);
       }
     } else if (settings.name!.startsWith('/roles')) {
-      ref.read(selectedMenuProvider.notifier).state = 3;
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ref.read(selectedMenuProvider.notifier).state = 3;
+      });
       if (settings.name == '/roles') {
         return routing(const Expanded(child: RolesList()), settings.name);
       } else if (settings.name == '/roles/new') {
         return routing(const Expanded(child: AddNewRole()), settings.name);
       }
     } else if (settings.name!.startsWith('/users')) {
-      ref.read(selectedMenuProvider.notifier).state = 4;
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ref.read(selectedMenuProvider.notifier).state = 4;
+      });
       if (settings.name == '/users') {
         return routing(const Expanded(child: UsersList()), settings.name);
       } else if (settings.name == '/users/new') {
         return routing(const Expanded(child: InviteNewUser()), settings.name);
       }
     }
-    ref.read(selectedMenuProvider.notifier).state = 0;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(selectedMenuProvider.notifier).state = 0;
+    });
     return routing(const Expanded(child: Homepage()), settings.name);
   }
 }

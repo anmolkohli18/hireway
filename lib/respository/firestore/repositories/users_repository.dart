@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hireway/firebase/firestore/firestore_collections.dart';
+import 'package:hireway/respository/firestore/firestore_collections.dart';
 import 'package:hireway/respository/firestore/firestore_converters.dart';
 import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
 import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/virtual/virtual_db.dart';
+import 'package:synchronized/synchronized.dart';
 
 class UsersRepository {
   final VirtualDB _users = VirtualDB("users");
@@ -14,6 +15,7 @@ class UsersRepository {
       _usersSubscription;
 
   bool _subscribed = false;
+  final Lock _lock = Lock();
 
   static final UsersRepository _repo = UsersRepository._privateConstructor();
 
@@ -32,13 +34,14 @@ class UsersRepository {
   Future<HirewayUser?> getOne(String emailId) async {
     await _repo._subscribe();
     final user = await _users.findOne("email", emailId);
-    return user.isEmpty ? HirewayUser.fromJson(user) : null;
+    return user.isNotEmpty ? HirewayUser.fromJson(user) : null;
   }
 
   Future<void> insert(HirewayUser user) async {
     await _repo._subscribe();
+    String businessName = await getBusinessName();
     withUserDocumentConverter(userDocument(user.email)).set(user);
-    userMetaDocument(user.email).set({
+    userMetaDocument(businessName).set({
       "users": FieldValue.arrayUnion(["${user.name},${user.email}"])
     }, SetOptions(merge: true));
   }
@@ -49,13 +52,18 @@ class UsersRepository {
         .set(user, SetOptions(merge: true));
   }
 
-  Future<List<String>> usersList() => _users.getMetadata();
+  Future<List<String>> usersList() async {
+    await _repo._subscribe();
+    return _users.getMetadata();
+  }
 
   Future<void> _subscribe() async {
-    if (!_subscribed) {
-      await _usersSubscribe();
-      _subscribed = true;
-    }
+    await _lock.synchronized(() async {
+      if (!_subscribed) {
+        await _usersSubscribe();
+        _subscribed = true;
+      }
+    });
   }
 
   Future<void> _unsubscribe() async {
@@ -66,8 +74,16 @@ class UsersRepository {
     String businessName = await getBusinessName();
     final Stream<QuerySnapshot<Map<String, dynamic>>> users =
         usersCollectionRef(businessName).snapshots();
-    _usersSubscription = users
-        .listen((event) => populateVirtualDb(event, _users, "email", "users"));
+
+    _usersSubscription =
+        users.listen((event) => populateVirtualDb(event, _users, "email"));
+
+    final Stream<DocumentSnapshot<Map<String, dynamic>>> usersMetadata =
+        userMetaDocument(businessName).snapshots();
+    usersMetadata
+        .listen((event) => populateMetadataVirtualDB(event, _users, "users"));
+
     await users.first;
+    await usersMetadata.first;
   }
 }
