@@ -6,10 +6,11 @@ import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/auto_complete_multi_text_field.dart';
 import 'package:hireway/custom_fields/auto_complete_text_field.dart';
-import 'package:hireway/firebase/candidates_firestore.dart';
-import 'package:hireway/firebase/user_firestore.dart';
-import 'package:hireway/firebase/rounds_firestore.dart';
-import 'package:hireway/firebase/schedule_firestore.dart';
+import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/user_firestore.dart';
+import 'package:hireway/respository/rounds_firestore.dart';
+import 'package:hireway/respository/schedule_firestore.dart';
 import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';
@@ -169,7 +170,7 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
               ),
               AutoCompleteTextField(
                 textFieldKey: _candidateInfoFieldKey,
-                kOptions: candidatesList(),
+                kOptions: CandidatesRepository().candidatesList(),
                 onChanged: setCandidate,
                 preSelectedOption: _candidateInfo,
               ),
@@ -292,9 +293,20 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
                         onPressed: _isFormEnabled
                             ? () {
                                 addSchedule().then((value) {
-                                  candidatesFirestore
-                                      .doc(getEmailFromInfo(_candidateInfo))
-                                      .update({"interviewStage": "ongoing"});
+                                  final emailId =
+                                      getEmailFromInfo(_candidateInfo);
+                                  final candidatesRepository =
+                                      CandidatesRepository();
+                                  candidatesRepository
+                                      .getOne(emailId)
+                                      .then((Candidate? candidate) {
+                                    Map<String, dynamic> candidateJson =
+                                        candidate!.toJson();
+                                    candidateJson["interviewStage"] = "ongoing";
+                                    Candidate newCandidate =
+                                        Candidate.fromJson(candidateJson);
+                                    candidatesRepository.update(newCandidate);
+                                  });
                                   ref
                                       .read(scheduleStateProvider.notifier)
                                       .state = SchedulesState.newScheduleAdded;

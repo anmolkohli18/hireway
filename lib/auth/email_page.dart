@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hireway/settings.dart';
 import 'package:hireway/console/app_console.dart';
-import 'package:hireway/firebase/auth/password_page.dart';
+import 'package:hireway/auth/password_page.dart';
 
 class GetEmailForm extends StatefulWidget {
   const GetEmailForm({Key? key}) : super(key: key);

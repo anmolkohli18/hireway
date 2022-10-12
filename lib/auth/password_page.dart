@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hireway/auth/business_details.dart';
 import 'package:hireway/console/app_console.dart';
-import 'package:hireway/firebase/auth/business_details.dart';
 import 'package:hireway/settings.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
 
 class CreatePasswordForm extends StatefulWidget {
   final String email;

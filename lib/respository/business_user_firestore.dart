@@ -1,15 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
-import 'package:hireway/firebase/user_firestore.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
+import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/user_firestore.dart';
 import 'package:intl/intl.dart';
 
 final clientCollection = FirebaseFirestore.instance.collection("clients");
 
 // TODO cache it in local variable
 Future<String> getBusinessName() async {
-  final DocumentSnapshot<User> userDoc =
-      await userFirestore.doc(getUserDetails().email).get();
-  User user = userDoc.data()!;
+  final DocumentSnapshot<HirewayUser> userDoc =
+      await userFirestore.doc(getCurrentUserEmail()).get();
+  HirewayUser user = userDoc.data()!;
   return user.businessName;
 }
 
@@ -20,7 +21,7 @@ void addClient(String businessName, String userEmail, String userName,
   DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
   String now = dateFormat.format(DateTime.now());
 
-  User user = User(
+  HirewayUser user = HirewayUser(
       name: userName,
       email: userEmail,
       skills: userSkills,

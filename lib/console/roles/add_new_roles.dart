@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
-import 'package:hireway/firebase/roles_firestore.dart';
+import 'package:hireway/respository/roles_firestore.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 

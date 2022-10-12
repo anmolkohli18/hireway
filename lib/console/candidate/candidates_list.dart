@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
+import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/firebase/candidates_firestore.dart';
-import 'package:hireway/firebase/rounds_firestore.dart';
+import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/rounds_firestore.dart';
 import 'package:hireway/settings.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -30,8 +32,7 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<Candidate>> _candidateStreamController =
-      StreamController();
+  final CandidatesRepository _candidatesRepository = CandidatesRepository();
 
   @override
   void initState() {
@@ -41,10 +42,10 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     _animation =
         CurveTween(curve: Curves.fastOutSlowIn).animate(_animationController!);
 
-    _candidateStreamController.addStream(candidatesFirestore
-        .orderBy('addedOnDateTime', descending: true)
-        .limit(10)
-        .snapshots());
+    // _candidateStreamController.addStream(candidatesFirestore
+    //     .orderBy('addedOnDateTime', descending: true)
+    //     .limit(10)
+    //     .snapshots());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (ref.watch(candidatesStateProvider.state).state ==
@@ -54,37 +55,24 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     });
   }
 
-  Widget listOfCandidates(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Candidate>>(
-        stream: _candidateStreamController.stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+  @override
+  Widget build(BuildContext context) {
+    widgetBuilder(List<Candidate> candidates) {
+      if (candidates.isNotEmpty) {
+        return candidatesListView(candidates);
+      } else {
+        return emptyState(context);
+      }
+    }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black45,
-              ),
-            );
-          }
-          final List<QueryDocumentSnapshot<Candidate>> candidates =
-              snapshot.requireData.docs;
-          if (candidates.isNotEmpty) {
-            return candidatesListView(candidates);
-          } else {
-            return emptyState(context);
-          }
-        });
+    return withFutureBuilder(
+        future: _candidatesRepository.getAll(), widgetBuilder: widgetBuilder);
   }
 
-  Widget candidatesListView(List<QueryDocumentSnapshot<Candidate>> candidates) {
+  Widget candidatesListView(List<Candidate> candidates) {
     List<Widget> candidatesWidgetList = [];
     for (var index = 0; index < candidates.length; index++) {
-      Candidate candidate = candidates[index].data();
+      Candidate candidate = candidates[index];
       if (candidate.interviewStage == interviewStage) {
         candidatesWidgetList.add(candidateTile(
             index,
@@ -161,12 +149,56 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
             const SizedBox(
               height: 16,
             ),
-            Expanded(
-                child: ListView(
-              children: candidatesWidgetList,
-            ))
+            candidatesWidgetList.isNotEmpty
+                ? Expanded(
+                    child: ListView(
+                    children: candidatesWidgetList,
+                  ))
+                : tabEmptyState()
           ],
         ),
+      ),
+    );
+  }
+
+  Widget tabEmptyState() {
+    String tabHeading = "There are no candidates in $interviewStage stage.";
+    String tabSubHeading;
+    switch (interviewStage) {
+      case "screening":
+        tabSubHeading =
+            "Candidates who are added but not scheduled for an interview yet will appear here.";
+        break;
+      case "ongoing":
+        tabSubHeading =
+            "Candidates who are being interviewed but are not hired or rejected yet will appear here.";
+        break;
+      case "hired":
+        tabSubHeading = "Candidates who are hired will appear here.";
+        break;
+      case "rejected":
+      default:
+        tabSubHeading = "Candidates who are rejected will appear here.";
+        break;
+    }
+    return Expanded(
+      child: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Text(
+              tabHeading,
+              style: heading2,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 28.0),
+            child: Text(
+              tabSubHeading,
+              style: subHeading,
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -517,10 +549,5 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     await Future.delayed(const Duration(seconds: 3))
         .whenComplete(() => _animationController!.reverse())
         .whenComplete(() => successOverlayEntry.remove());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return listOfCandidates(context);
   }
 }

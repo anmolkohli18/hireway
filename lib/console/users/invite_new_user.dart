@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
-import 'package:hireway/firebase/business_user_firestore.dart';
-import 'package:hireway/firebase/send_email.dart';
-import 'package:hireway/firebase/user_firestore.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
+import 'package:hireway/respository/business_user_firestore.dart';
+import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/send_email.dart';
+import 'package:hireway/respository/user_firestore.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 
@@ -38,7 +39,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
     String now = dateFormat.format(DateTime.now());
 
     String businessName = await getBusinessName();
-    User user = User(
+    HirewayUser user = HirewayUser(
         name: _name,
         email: _email,
         skills: _skills,
@@ -254,7 +255,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
                                 });
 
                                 const String companyName = "Argoid Analytics";
-                                String adminInviter = getUserDetails().name;
+                                String adminInviter = getCurrentUserName();
                                 String inviteeName = _name;
                                 String inviteeEmail = _email;
                                 sendEmail(

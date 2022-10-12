@@ -5,13 +5,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/helper/regex_functions.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:hireway/console/candidate/hire_reject_interview.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
-import 'package:hireway/firebase/candidates_firestore.dart';
-import 'package:hireway/firebase/rounds_firestore.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
+import 'package:hireway/respository/rounds_firestore.dart';
 import 'package:hireway/helper/stateless_functions.dart';
 import 'package:hireway/settings.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,9 +34,9 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
 
   QueryDocumentSnapshot<Round>? _pendingReviewDocument;
 
+  final CandidatesRepository _candidatesRepository = CandidatesRepository();
+
   final StreamController<QuerySnapshot<Round>> _streamController =
-      StreamController();
-  final StreamController<QuerySnapshot<Candidate>> _candidateStreamControlled =
       StreamController();
 
   final _formKey = GlobalKey<FormState>();
@@ -74,10 +75,6 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   @override
   void initState() {
     super.initState();
-
-    _candidateStreamControlled.addStream(candidatesFirestore
-        .where("email", isEqualTo: widget.email)
-        .snapshots());
 
     _streamController.addStream(roundsFirestore(widget.email)
         .orderBy("scheduledOn", descending: true)
@@ -400,8 +397,8 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Candidate>>(
-        stream: _candidateStreamControlled.stream,
+    return FutureBuilder<Candidate?>(
+        future: _candidatesRepository.getOne(widget.email),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -417,8 +414,7 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
             );
           }
 
-          final Candidate candidateInfo =
-              snapshot.requireData.docs.first.data();
+          final Candidate candidateInfo = snapshot.requireData!;
           return Padding(
             padding: const EdgeInsets.only(top: 80.0, left: 80),
             child: Column(

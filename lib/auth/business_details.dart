@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
-import 'package:hireway/firebase/business_user_firestore.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
+import 'package:hireway/respository/business_user_firestore.dart';
 import 'package:hireway/settings.dart';
 
 class GetOnboardingDetailsForm extends StatefulWidget {
@@ -220,7 +221,7 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
                           ? () {
                               // TODO test with new user, it is throwing null
                               updateDisplayName(_userName);
-                              addClient(_businessName, getUserDetails().email,
+                              addClient(_businessName, getCurrentUserEmail(),
                                   _userName, _userRole!, _skills);
                               Navigator.pushNamed(context, "/home");
                             }

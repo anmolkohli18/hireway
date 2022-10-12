@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/firebase/user_firestore.dart';
+import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/user_firestore.dart';
 import 'package:hireway/settings.dart';
 
 class UsersList extends ConsumerStatefulWidget {
@@ -26,7 +27,7 @@ class _UsersListState extends ConsumerState<UsersList>
   AnimationController? _animationController;
   Animation<double>? _animation;
 
-  final StreamController<QuerySnapshot<User>> _streamController =
+  final StreamController<QuerySnapshot<HirewayUser>> _streamController =
       StreamController();
 
   @override
@@ -48,7 +49,7 @@ class _UsersListState extends ConsumerState<UsersList>
   }
 
   Widget listOfUsers(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<User>>(
+    return StreamBuilder<QuerySnapshot<HirewayUser>>(
         stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -64,7 +65,7 @@ class _UsersListState extends ConsumerState<UsersList>
               ),
             );
           }
-          final List<QueryDocumentSnapshot<User>> users =
+          final List<QueryDocumentSnapshot<HirewayUser>> users =
               snapshot.requireData.docs;
           if (users.isNotEmpty) {
             return usersListView(users);
@@ -74,10 +75,10 @@ class _UsersListState extends ConsumerState<UsersList>
         });
   }
 
-  Widget usersListView(List<QueryDocumentSnapshot<User>> users) {
+  Widget usersListView(List<QueryDocumentSnapshot<HirewayUser>> users) {
     List<Widget> usersWidgetList = [];
     for (var index = 0; index < users.length; index++) {
-      User user = users[index].data();
+      HirewayUser user = users[index].data();
       if (isAvailable == user.available) {
         usersWidgetList.add(userTile(
           index,

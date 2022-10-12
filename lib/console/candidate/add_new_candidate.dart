@@ -1,13 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/firestore_database.dart';
+import 'package:hireway/main.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/settings.dart';
-import 'package:hireway/firebase/candidates_firestore.dart';
-import 'package:hireway/firebase/fire_storage.dart';
+import 'package:hireway/respository/fire_storage.dart';
 import 'package:intl/intl.dart';
 
 class AddNewCandidate extends ConsumerStatefulWidget {
@@ -35,6 +37,8 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
 
   double _height = 680;
 
+  final CandidatesRepository _candidatesRepository = CandidatesRepository();
+
   Future<void> addCandidate() async {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());
@@ -54,15 +58,10 @@ class _AddNewCandidateState extends ConsumerState<AddNewCandidate> {
     uploadFile(candidate.name, _localResumeFile!, candidate.resume)
         .then((resumeFireStorage) {
       if (resumeFireStorage != null) {
-        candidatesFirestore
-            .doc(candidate.email)
-            .set(candidate, SetOptions(merge: true));
-        candidatesCollection.doc("metadata").set({
-          "candidates":
-              FieldValue.arrayUnion(["${candidate.name},${candidate.email}"])
-        }, SetOptions(merge: true)).then((value) {
-          Navigator.pushNamed(context, '/candidates');
-        }).catchError((error) => print("Failed to add candidate $error"));
+        _candidatesRepository
+            .insert(candidate)
+            .then((value) => Navigator.pushNamed(context, '/candidates'))
+            .catchError((error) => print("Failed to add candidate $error"));
       }
     });
   }

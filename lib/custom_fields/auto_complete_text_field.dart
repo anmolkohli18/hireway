@@ -9,7 +9,7 @@ class AutoCompleteTextField extends StatefulWidget {
       required this.onChanged,
       required this.preSelectedOption});
   final Key textFieldKey;
-  final Stream<List<String>> kOptions;
+  final Future<List<String>> kOptions;
   final Function(String) onChanged;
   final String preSelectedOption;
 
@@ -43,8 +43,8 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<String>>(
-        stream: widget.kOptions,
+    return FutureBuilder<List<String>>(
+        future: widget.kOptions,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(

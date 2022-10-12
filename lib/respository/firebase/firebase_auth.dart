@@ -1,32 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:hireway/firebase/auth/hireway_user.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/main.dart';
 
-String whoAmI() {
-  final userDetails = getUserDetails();
-  return "${userDetails.name} <${userDetails.email}>";
+String whoAmI() => "${getCurrentUserName()} <${getCurrentUserEmail()}>";
+
+String getCurrentUserName() {
+  final auth = FirebaseAuth.instance;
+  return auth.currentUser!.displayName!;
 }
 
-void firebaseAuth() {
-  FirebaseAuth auth = FirebaseAuth.instance;
-  auth.authStateChanges().listen((User? user) {
-    if (user == null) {
-      print("User is currently signed out!");
-    } else {
-      print("User ${user.displayName} ${user.email} is signed in!");
-    }
-  });
+String getCurrentUserEmail() {
+  final auth = FirebaseAuth.instance;
+  return auth.currentUser!.email!;
 }
 
-HirewayUser getUserDetails() {
-  print(isLoggedIn());
-  print(FirebaseAuth.instance.currentUser!.displayName);
-  print(FirebaseAuth.instance.currentUser!.email);
-  return HirewayUser(
-      name: FirebaseAuth.instance.currentUser!.displayName!,
-      email: FirebaseAuth.instance.currentUser!.email!);
+bool isLoggedIn(WidgetRef ref) {
+  final auth = ref.watch(authStateChangesProvider);
+  return auth.asData?.value?.uid != null;
 }
-
-bool isLoggedIn() => FirebaseAuth.instance.currentUser != null;
 
 void updateDisplayName(String userName) {
   User? user = FirebaseAuth.instance.currentUser;

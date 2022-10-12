@@ -1,31 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-final candidatesCollection = FirebaseFirestore.instance
-    .collection("clients")
-    .doc("client-name")
-    .collection("candidates");
-
-final candidatesFirestore = candidatesCollection.withConverter(
-    fromFirestore: (snapshots, _) => Candidate.fromJson(snapshots.data()!),
-    toFirestore: (candidate, _) => candidate.toJson());
-
-final candidateMetadata = candidatesCollection.doc("metadata");
-
-Stream<List<String>> candidatesList() async* {
-  DocumentSnapshot<Map<String, dynamic>> value = await candidateMetadata.get();
-
-  List<String> kOptions = [];
-
-  List<dynamic> candidates = value.data()!["candidates"]! as List<dynamic>;
-  for (int index = 0; index < candidates.length; index++) {
-    String name = candidates[index].split(",")[0].toString().trim();
-    String email = candidates[index].split(",")[1].toString().trim();
-    kOptions.add("$name <$email>");
-  }
-
-  yield kOptions;
-}
 
 @immutable
 class Candidate {

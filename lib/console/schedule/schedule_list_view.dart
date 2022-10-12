@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hireway/custom_fields/highlighted_tag.dart';
-import 'package:hireway/firebase/schedule_firestore.dart';
+import 'package:hireway/respository/schedule_firestore.dart';
 import 'package:hireway/helper/date_functions.dart';
 import 'package:hireway/helper/regex_functions.dart';
 import 'package:hireway/settings.dart';

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
-import 'package:hireway/firebase/auth/firebase_auth.dart';
-import 'package:hireway/firebase/candidates_firestore.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
+import 'package:hireway/respository/firestore/objects/candidate.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
 import 'package:hireway/settings.dart';
 
 class HireRejectInterview extends ConsumerStatefulWidget {
@@ -79,10 +80,20 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
                             btnOkText: "Hire now!",
                             btnOkColor: const Color(0xFF377C7B),
                             btnOkOnPress: () {
-                              candidatesFirestore.doc(widget.email).update({
-                                "interviewStage": "hired",
-                                "hiredOrRejectedOn": DateTime.now().toString(),
-                                "hiringManager": whoAmI()
+                              final candidatesRepository =
+                                  CandidatesRepository();
+                              candidatesRepository
+                                  .getOne(widget.email)
+                                  .then((Candidate? candidate) {
+                                Map<String, dynamic> candidateJson =
+                                    candidate!.toJson();
+                                candidateJson["interviewStage"] = "hired";
+                                candidateJson["hiredOrRejectedOn"] =
+                                    DateTime.now().toString();
+                                candidateJson["hiringManager"] = whoAmI();
+                                Candidate newCandidate =
+                                    Candidate.fromJson(candidateJson);
+                                candidatesRepository.update(newCandidate);
                               });
                               ref.read(candidatesStateProvider.notifier).state =
                                   CandidatesState.candidateHired;
@@ -119,10 +130,20 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
                             btnOkText: "Reject now!",
                             btnOkColor: const Color(0XFF565F5F),
                             btnOkOnPress: () {
-                              candidatesFirestore.doc(widget.email).update({
-                                "interviewStage": "rejected",
-                                "hiredOrRejectedOn": DateTime.now().toString(),
-                                "hiringManager": whoAmI()
+                              final candidatesRepository =
+                                  CandidatesRepository();
+                              candidatesRepository
+                                  .getOne(widget.email)
+                                  .then((Candidate? candidate) {
+                                Map<String, dynamic> candidateJson =
+                                    candidate!.toJson();
+                                candidateJson["interviewStage"] = "rejected";
+                                candidateJson["hiredOrRejectedOn"] =
+                                    DateTime.now().toString();
+                                candidateJson["hiringManager"] = whoAmI();
+                                Candidate newCandidate =
+                                    Candidate.fromJson(candidateJson);
+                                candidatesRepository.update(newCandidate);
                               });
                               ref.read(candidatesStateProvider.notifier).state =
                                   CandidatesState.candidateRejected;
