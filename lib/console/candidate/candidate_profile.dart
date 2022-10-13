@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/console/app_console.dart';
+import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/builders.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/helper/regex_functions.dart';
@@ -104,7 +106,6 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   }
 
   Widget reviewsAndRatings() {
-    print("building future for reviews and ratings");
     return withFutureBuilder(
         future: _roundsRepository.getAllWhere(
             "candidateInfo", "${widget.name},${widget.email}"),
@@ -386,6 +387,8 @@ class _CandidateProfileState extends ConsumerState<CandidateProfile>
   }
 
   Widget candidateProfileBuilder(Candidate? candidateInfo) {
+    // Watching candidates state provider so that candidate profile widget rebuilds on hire or reject of a candidate
+    ref.watch(candidatesStateProvider);
     return Padding(
       padding: const EdgeInsets.only(top: 80.0, left: 80),
       child: Column(

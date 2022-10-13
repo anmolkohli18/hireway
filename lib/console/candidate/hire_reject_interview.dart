@@ -79,22 +79,21 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
                                 "This is only for internal purpose and No email will be sent to the candidate.",
                             btnOkText: "Hire now!",
                             btnOkColor: const Color(0xFF377C7B),
-                            btnOkOnPress: () {
+                            btnOkOnPress: () async {
                               final candidatesRepository =
                                   CandidatesRepository();
-                              candidatesRepository
-                                  .getOne(widget.email)
-                                  .then((Candidate? candidate) {
-                                Map<String, dynamic> candidateJson =
-                                    candidate!.toJson();
-                                candidateJson["interviewStage"] = "hired";
-                                candidateJson["hiredOrRejectedOn"] =
-                                    DateTime.now().toString();
-                                candidateJson["hiringManager"] = whoAmI();
-                                Candidate newCandidate =
-                                    Candidate.fromJson(candidateJson);
-                                candidatesRepository.update(newCandidate);
-                              });
+                              Candidate? candidate = await candidatesRepository
+                                  .getOne(widget.email);
+                              Map<String, dynamic> candidateJson =
+                                  candidate!.toJson();
+                              candidateJson["interviewStage"] = "hired";
+                              candidateJson["hiredOrRejectedOn"] =
+                                  DateTime.now().toString();
+                              candidateJson["hiringManager"] = whoAmI();
+                              Candidate newCandidate =
+                                  Candidate.fromJson(candidateJson);
+
+                              await candidatesRepository.update(newCandidate);
                               ref.read(candidatesStateProvider.notifier).state =
                                   CandidatesState.candidateHired;
                             }).show();
