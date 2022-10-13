@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:hireway/emails/invite_email.dart';
 import 'package:http/http.dart' as http;
 
-void sendEmail(String companyName, String adminInviter, String inviteeName,
-    String inviteeEmail, String roleInvitedFor) async {
+Future<String> sendEmail(String companyName, String adminInviter,
+    String inviteeName, String inviteeEmail, String roleInvitedFor, String actionLink) async {
   final String emailBodyHtml =
-      getInviteEmailBodyHtml(companyName, adminInviter, roleInvitedFor);
+      getInviteEmailBodyHtml(companyName, adminInviter, roleInvitedFor, actionLink);
 
   final String jsonBody = jsonEncode({
     'name': inviteeName,
@@ -26,5 +26,5 @@ void sendEmail(String companyName, String adminInviter, String inviteeName,
       Uri.parse("https://send-email-app.vercel.app/api/send_gmail"),
       headers: customHeaders,
       body: jsonBody);
-  print(response.body);
+  return response.body;
 }

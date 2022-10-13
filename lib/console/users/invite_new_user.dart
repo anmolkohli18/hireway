@@ -240,23 +240,26 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(
                         onPressed: _isFormEnabled
-                            ? () {
+                            ? () async {
                                 addUser().then((value) {
+                                  getBusinessName().then((businessName) {
+                                    String inviterName = getCurrentUserName();
+                                    String inviteeName = _name;
+                                    String inviteeEmail = _email;
+                                    String loginLink =
+                                        "http://localhost:50609/#/login?email=$_email";
+                                    sendEmail(
+                                        businessName,
+                                        inviterName,
+                                        inviteeName,
+                                        inviteeEmail,
+                                        _userRole!.toLowerCase(),
+                                        loginLink);
+                                  });
                                   ref.read(userStateProvider.notifier).state =
                                       UsersState.newUserAdded;
                                   Navigator.pushNamed(context, '/users');
                                 });
-
-                                const String companyName = "Argoid Analytics";
-                                String adminInviter = getCurrentUserName();
-                                String inviteeName = _name;
-                                String inviteeEmail = _email;
-                                sendEmail(
-                                    companyName,
-                                    adminInviter,
-                                    inviteeName,
-                                    inviteeEmail,
-                                    _userRole!.toLowerCase());
                               }
                             : null,
                         child: const Text(

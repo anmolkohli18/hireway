@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/auth/email_page.dart';
+import 'package:hireway/auth/password_page.dart';
 import 'package:hireway/console/candidate/add_new_candidate.dart';
 import 'package:hireway/console/candidate/candidate_profile.dart';
 import 'package:hireway/console/enums.dart';
@@ -69,12 +71,16 @@ class _AppConsoleState extends ConsumerState<AppConsole> {
           scaffoldBackgroundColor: const Color(0xFFF4F6F7),
           colorScheme: const ColorScheme.light(
               background: primaryButtonColor, secondary: secondaryButtonColor)),
-      initialRoute: '/home',
+      initialRoute: isLoggedIn(ref) ? '/home' : '/login',
       onGenerateRoute: (RouteSettings settings) {
         if (isLoggedIn(ref)) {
           return appConsoleRoute(settings);
+        } else if (settings.name!.startsWith('/login?email=')) {
+          final String userEmail = settings.name!.split("=")[1];
+          return MyCustomRoute(
+              builder: (_) => CreatePasswordForm(email: userEmail),
+              settings: RouteSettings(name: settings.name));
         }
-        // TODO change to login screen
         return MyCustomRoute(
             builder: (_) => const GetEmailForm(),
             settings: RouteSettings(name: settings.name));

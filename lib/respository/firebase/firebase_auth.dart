@@ -16,10 +16,10 @@ String getCurrentUserEmail() {
 
 bool isLoggedIn(WidgetRef ref) => FirebaseAuth.instance.currentUser != null;
 
-void updateDisplayName(String userName) {
+Future<void> updateDisplayName(String userName) async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
-    user.updateDisplayName(userName);
+    await user.updateDisplayName(userName);
   }
 }
 
@@ -30,7 +30,8 @@ Future<UserAccountState> createUserAccountOrSignIn(
         .createUserWithEmailAndPassword(email: email, password: password);
     User? user = userCredential.user;
     if (user != null && !user.emailVerified) {
-      await user.sendEmailVerification();
+      print("not sending email verification for now");
+      //await user.sendEmailVerification();
     }
     return UserAccountState.accountCreated;
   } on FirebaseAuthException catch (e) {

@@ -15,11 +15,10 @@ class DrawerWidget extends ConsumerWidget {
 
   DrawerWidget({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  List<Widget> getMenuTiles(BuildContext context, WidgetRef ref) {
     final selectedMenuItem = ref.watch(selectedMenuProvider.state).state;
 
-    var menuListTiles = <Padding>[];
+    List<Widget> menuListTiles = <Widget>[];
 
     for (var i = 0; i < menuItems.length; i++) {
       var item = menuItems[i];
@@ -48,6 +47,12 @@ class DrawerWidget extends ConsumerWidget {
         ),
       ));
     }
+    return menuListTiles;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final menuListTiles = getMenuTiles(context, ref);
 
     return Container(
       width: 300,
@@ -90,8 +95,8 @@ class DrawerWidget extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.logout),
                       onPressed: () {
-                        signOut();
-                        Navigator.pushNamed(context, '/login');
+                        signOut().then(
+                            (value) => Navigator.pushNamed(context, '/login'));
                       },
                     )
                   ],

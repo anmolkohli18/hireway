@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hireway/auth/business_details.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
+import 'package:hireway/respository/firestore/firestore_documents.dart';
 import 'package:hireway/settings.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
 
@@ -124,11 +126,24 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                                       .then((userAccountState) {
                                     if (userAccountState ==
                                         UserAccountState.accountCreated) {
-                                      Navigator.push(
-                                          context,
-                                          MyCustomRoute(
-                                              builder: (context) =>
-                                                  const GetOnboardingDetailsForm()));
+                                      userDocument(widget.email).get().then(
+                                          (DocumentSnapshot<
+                                                  Map<String, dynamic>>
+                                              value) {
+                                        if (value.exists) {
+                                          final String userName =
+                                              value.data()!["name"];
+                                          updateDisplayName(userName).then(
+                                              (value) => Navigator.pushNamed(
+                                                  context, "/home"));
+                                        } else {
+                                          Navigator.push(
+                                              context,
+                                              MyCustomRoute(
+                                                  builder: (context) =>
+                                                      const GetOnboardingDetailsForm()));
+                                        }
+                                      });
                                     } else if (userAccountState ==
                                         UserAccountState.signedIn) {
                                       Navigator.pushNamed(context, "/home");
