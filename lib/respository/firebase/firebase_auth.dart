@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/console/enums.dart';
 
 String whoAmI() => "${getCurrentUserName()},${getCurrentUserEmail()}";
 
@@ -18,45 +19,48 @@ bool isLoggedIn(WidgetRef ref) => FirebaseAuth.instance.currentUser != null;
 void updateDisplayName(String userName) {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
-    print("Updating user name");
     user.updateDisplayName(userName);
   }
 }
 
-void createUserAccount(String email, String password) async {
+Future<UserAccountState> createUserAccountOrSignIn(
+    String email, String password) async {
   try {
     UserCredential userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     User? user = userCredential.user;
     if (user != null && !user.emailVerified) {
       await user.sendEmailVerification();
-      print("User ${user.displayName} ${user.email} is signed in!");
     }
+    return UserAccountState.accountCreated;
   } on FirebaseAuthException catch (e) {
     if (e.code == 'weak-password') {
-      print('The password provided is too weak.');
+      return UserAccountState.weakPassword;
     } else if (e.code == 'email-already-in-use') {
-      print('The account already exists for that email.');
       User? user = await signInUser(email, password);
-      print(user != null ? "${user.email}" : "user is null");
+      if (user != null) {
+        return UserAccountState.signedIn;
+      }
     }
   } catch (e) {
-    print(e);
+    return UserAccountState.unableToCreateAccount;
   }
+  return UserAccountState.unableToCreateAccount;
 }
 
 Future<User?> signInUser(String email, String password) async {
   try {
-    //SuperSecretPassword!
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
     return userCredential.user;
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
-      print('No user found for that email.');
+      return null;
     } else if (e.code == 'wrong-password') {
-      print('Wrong password provided for that user.');
+      return null;
     }
   }
-  return Future<User?>.value(null);
+  return null;
 }
+
+Future<void> signOut() async => FirebaseAuth.instance.signOut();

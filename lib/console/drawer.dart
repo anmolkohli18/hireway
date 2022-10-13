@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/respository/firebase/firebase_auth.dart';
 import 'package:hireway/settings.dart';
 import 'package:hireway/console/app_console.dart';
 
@@ -71,6 +72,34 @@ class DrawerWidget extends ConsumerWidget {
               children: menuListTiles,
             ),
           ),
+          Container(
+            width: 300,
+            height: 100,
+            color: highlightColor,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        getCurrentUserName(),
+                        style: heading3,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.logout),
+                      onPressed: () {
+                        signOut();
+                        Navigator.pushNamed(context, '/login');
+                      },
+                    )
+                  ],
+                ),
+                const Divider()
+              ],
+            ),
+          )
         ],
       ),
     );
