@@ -1,16 +1,74 @@
 import 'package:enhance_stepper/enhance_stepper.dart';
 import 'package:flutter/material.dart';
+import 'package:hireway/custom_fields/builders.dart';
+import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/firestore/repositories/roles_repository.dart';
+import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
+import 'package:hireway/respository/firestore/repositories/users_repository.dart';
 import 'package:hireway/settings.dart';
 
-class Homepage extends StatelessWidget {
-  const Homepage({Key? key}) : super(key: key);
+class Homepage extends StatefulWidget {
+  const Homepage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  final UsersRepository _usersRepository = UsersRepository();
+  final RolesRepository _rolesRepository = RolesRepository();
+  final CandidatesRepository _candidatesRepository = CandidatesRepository();
+  final SchedulesRepository _schedulesRepository = SchedulesRepository();
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<List<List<String>>>(
+        future: Future.wait([
+          _rolesRepository.rolesList(),
+          _usersRepository.usersList(),
+          _candidatesRepository.candidatesList(),
+          _schedulesRepository.schedulesList()
+        ]),
+        builder: ((context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black45,
+              ),
+            );
+          }
+
+          final List<List<String>> listOfMetadataList = snapshot.requireData;
+          final int rolesCount = listOfMetadataList[0].length;
+          final int usersCount = listOfMetadataList[1].length;
+          final int candidatesCount = listOfMetadataList[2].length;
+          final int schedulesCount = listOfMetadataList[3].length;
+
+          if (rolesCount == 0) {
+            return stepsBuilder(currentStep: 1);
+          } else if (usersCount == 0) {
+            return stepsBuilder(currentStep: 2);
+          } else if (candidatesCount == 0) {
+            return stepsBuilder(currentStep: 3);
+          } else if (schedulesCount == 0) {
+            return stepsBuilder(currentStep: 4);
+          } else {
+            return stepsBuilder(currentStep: 2);
+          }
+        }));
+  }
+
+  Widget stepsBuilder({int currentStep = 1}) {
     return Center(
         child: Container(
-            width: 648,
-            height: 520,
+            width: 630,
+            height: 630,
             padding: const EdgeInsets.all(40),
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -46,7 +104,7 @@ class Homepage extends StatelessWidget {
                   ),
                 ),
                 EnhanceStepper(
-                    currentStep: 1,
+                    currentStep: currentStep,
                     controlsBuilder: (context, controlsDetails) {
                       return Container();
                     },
@@ -74,9 +132,52 @@ class Homepage extends StatelessWidget {
                       EnhanceStep(
                           icon: const Icon(Icons.person,
                               color: primaryButtonColor, size: 30),
-                          title: const Text(
+                          title: Text(
+                            "Add an open role",
+                            style:
+                                currentStep < 1 ? disabledHeading2 : heading2,
+                          ),
+                          subtitle: const Text(
+                            "Start adding open roles to hireway now!",
+                            style: subHeading,
+                          ),
+                          content: Container(
+                            alignment: Alignment.topLeft,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/roles/new');
+                              },
+                              child: const Text("Add Role"),
+                            ),
+                          )),
+                      EnhanceStep(
+                          icon: const Icon(Icons.person,
+                              color: primaryButtonColor, size: 30),
+                          title: Text(
+                            "Add your first interviewer",
+                            style:
+                                currentStep < 2 ? disabledHeading2 : heading2,
+                          ),
+                          subtitle: const Text(
+                            "Start adding interviewers to hireway now!",
+                            style: subHeading,
+                          ),
+                          content: Container(
+                            alignment: Alignment.topLeft,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/users/new');
+                              },
+                              child: const Text("Add Interviewer"),
+                            ),
+                          )),
+                      EnhanceStep(
+                          icon: const Icon(Icons.person,
+                              color: primaryButtonColor, size: 30),
+                          title: Text(
                             "Add your first candidate",
-                            style: heading2,
+                            style:
+                                currentStep < 3 ? disabledHeading2 : heading2,
                           ),
                           subtitle: const Text(
                             "Start adding candidates to hireway now!",
@@ -91,17 +192,27 @@ class Homepage extends StatelessWidget {
                               child: const Text("Add Candidate"),
                             ),
                           )),
-                      const EnhanceStep(
-                          icon: Icon(Icons.calendar_today,
+                      EnhanceStep(
+                          icon: const Icon(Icons.calendar_today,
                               color: lightHeadingColor, size: 20),
                           title: Text(
-                            "Set up interviews",
-                            style: disabledHeading2,
+                            "Schedule an interview",
+                            style:
+                                currentStep < 4 ? disabledHeading2 : heading2,
                           ),
-                          content: Text(
+                          subtitle: const Text(
                             "All done! Start scheduling interviews now!",
-                            style: heading2,
-                          ))
+                            style: subHeading,
+                          ),
+                          content: Container(
+                            alignment: Alignment.topLeft,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/schedules/new');
+                              },
+                              child: const Text("Add Schedule"),
+                            ),
+                          )),
                     ]),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),

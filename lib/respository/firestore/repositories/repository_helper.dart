@@ -34,14 +34,10 @@ Future<void> populateVirtualDb(QuerySnapshot<Map<String, dynamic>> event,
 
 Future<void> populateMetadataVirtualDB(
     DocumentSnapshot<Map<String, dynamic>> documentSnapshot,
-    VirtualDB virtualDb,
-    String metadataKey) async {
+    VirtualDB virtualDb) async {
   final Map<String, dynamic>? document = documentSnapshot.data();
   if (document != null) {
-    final List<String> metadata = (document[metadataKey]! as List<dynamic>)
-        .map((e) => e! as String)
-        .toList();
-    virtualDb.insertMetadata(metadata);
+    virtualDb.insertMetadata(document);
   }
 }
 

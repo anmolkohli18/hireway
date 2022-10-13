@@ -52,7 +52,7 @@ Future<void> showOverlay<T>(
     overlayState!.insert(successOverlayEntry);
     animationController!.forward();
     await Future.delayed(const Duration(seconds: 3));
-    animationController!.reverse();
+    animationController.reverse();
     successOverlayEntry.remove();
   }
 }

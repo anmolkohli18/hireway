@@ -2,7 +2,7 @@ import 'dart:async';
 
 class VirtualDB {
   final List<Map<String, dynamic>> _items = [];
-  final List<String> _metadata = [];
+  final Map<String, dynamic> _metadata = {};
 
   static final Map<String, VirtualDB> _db = {
     "candidates": VirtualDB._privateConstructor(),
@@ -29,12 +29,13 @@ class VirtualDB {
   Future<Map<String, dynamic>> findOne(String key, String value) async =>
       _items.firstWhere((element) => element[key] == value,
           orElse: () => <String, dynamic>{});
-  Future<bool> exists(String key, String value) async =>
-      _items.firstWhere((element) => element[key] == value,
-          orElse: () => <String, dynamic>{}).isNotEmpty;
+  Future<bool> exists(String key, String value) async => _items
+      .firstWhere((element) => element[key] == value,
+          orElse: () => <String, dynamic>{})
+      .isNotEmpty;
 
-  Future<List<String>> getMetadata() async => _metadata;
-
-  void insertMetadata(List<String> candidatesList) =>
-      _metadata.insertAll(0, candidatesList);
+  Future<List<String>> getMetaList(String key) async =>
+      (_metadata[key]! as List<dynamic>).map((e) => e! as String).toList();
+  void insertMetadata(Map<String, dynamic> metadata) =>
+      _metadata.addAll(metadata);
 }

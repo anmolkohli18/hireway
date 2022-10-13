@@ -35,3 +35,10 @@ CollectionReference<Map<String, dynamic>> roundsCollectionRef(
   final collection = FirebaseFirestore.instance.collection(collectionPath);
   return collection;
 }
+
+CollectionReference<Map<String, dynamic>> reportsCollectionRef(
+    String businessName) {
+  final collectionPath = "clients/$businessName/reports";
+  final collection = FirebaseFirestore.instance.collection(collectionPath);
+  return collection;
+}

@@ -68,7 +68,7 @@ class RoundsRepository {
 
   Future<List<String>> roundsList() async {
     await _repo._subscribe();
-    return _rounds.getMetadata();
+    return _rounds.getMetaList("rounds");
   }
 
   Future<void> _subscribe() async {
@@ -94,7 +94,7 @@ class RoundsRepository {
     final Stream<DocumentSnapshot<Map<String, dynamic>>> roundsMetadata =
         roundMetaDocument(businessName).snapshots();
     roundsMetadata
-        .listen((event) => populateMetadataVirtualDB(event, _rounds, "rounds"));
+        .listen((event) => populateMetadataVirtualDB(event, _rounds));
 
     await rounds.first;
     await roundsMetadata.first;

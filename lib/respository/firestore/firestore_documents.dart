@@ -72,3 +72,17 @@ DocumentReference<Map<String, dynamic>> roundMetaDocument(String businessName) {
   final document = FirebaseFirestore.instance.doc(documentPath);
   return document;
 }
+
+DocumentReference<Map<String, dynamic>> reportDocument(
+    String businessName, String reportId) {
+  final documentPath = "clients/$businessName/reports/$reportId";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}
+
+DocumentReference<Map<String, dynamic>> reportMetaDocument(
+    String businessName) {
+  final documentPath = "clients/$businessName/reports/metadata";
+  final document = FirebaseFirestore.instance.doc(documentPath);
+  return document;
+}

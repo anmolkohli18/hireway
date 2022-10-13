@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
+import 'package:hireway/respository/firestore/objects/report.dart';
 import 'package:hireway/respository/firestore/objects/roles.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/objects/schedule.dart';
@@ -38,4 +39,11 @@ DocumentReference<Round> withRoundDocumentConverter(
   return document.withConverter(
       fromFirestore: (snapshots, _) => Round.fromJson(snapshots.data()!),
       toFirestore: (round, _) => round.toJson());
+}
+
+DocumentReference<Report> withReportDocumentConverter(
+    DocumentReference<Map<String, dynamic>> document) {
+  return document.withConverter(
+      fromFirestore: (snapshots, _) => Report.fromJson(snapshots.data()!),
+      toFirestore: (report, _) => report.toJson());
 }
