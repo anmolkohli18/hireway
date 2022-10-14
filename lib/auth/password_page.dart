@@ -9,8 +9,12 @@ import 'package:hireway/settings.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';
 
 class CreatePasswordForm extends StatefulWidget {
+  const CreatePasswordForm(
+      {Key? key, required this.email, required this.isLoginFlow})
+      : super(key: key);
+
   final String email;
-  const CreatePasswordForm({Key? key, required this.email}) : super(key: key);
+  final bool isLoginFlow;
 
   @override
   State<StatefulWidget> createState() => _CreatePasswordFormState();
@@ -67,11 +71,13 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 30),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
                   child: Text(
-                    "Create a password",
-                    style: TextStyle(
+                    widget.isLoginFlow
+                        ? "Enter your password"
+                        : "Create a password",
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -147,6 +153,10 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                                     } else if (userAccountState ==
                                         UserAccountState.signedIn) {
                                       Navigator.pushNamed(context, "/home");
+                                    } else if (userAccountState ==
+                                        UserAccountState
+                                            .unableToCreateAccount) {
+                                      print("Unable to create account");
                                     }
                                   });
                                 }

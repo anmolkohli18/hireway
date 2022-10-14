@@ -4,7 +4,9 @@ import 'package:hireway/console/app_console.dart';
 import 'package:hireway/auth/password_page.dart';
 
 class GetEmailForm extends StatefulWidget {
-  const GetEmailForm({Key? key}) : super(key: key);
+  const GetEmailForm({Key? key, required this.isLoginFlow}) : super(key: key);
+
+  final bool isLoginFlow;
 
   @override
   State<StatefulWidget> createState() => _GetEmailFormState();
@@ -64,11 +66,13 @@ class _GetEmailFormState extends State<GetEmailForm> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 30),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 30),
                       child: Text(
-                        "Try Milkyway free for 30 days",
-                        style: TextStyle(
+                        widget.isLoginFlow
+                            ? "Log In"
+                            : "Try Milkyway free for 30 days",
+                        style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -124,6 +128,7 @@ class _GetEmailFormState extends State<GetEmailForm> {
                                               builder: (context) =>
                                                   CreatePasswordForm(
                                                     email: _email,
+                                                    isLoginFlow: widget.isLoginFlow
                                                   )));
                                     }
                                   : null,
@@ -145,20 +150,25 @@ class _GetEmailFormState extends State<GetEmailForm> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Already a member?",
-                    style: TextStyle(
+                Text(
+                    widget.isLoginFlow
+                        ? "Don't have an account?"
+                        : "Already a member?",
+                    style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.white)),
                 TextButton(
-                  child: const Text("Log In",
-                      style: TextStyle(
+                  child: Text(widget.isLoginFlow ? "Get Started" : "Log In",
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           decoration: TextDecoration.underline,
                           color: Colors.white)),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/login');
+                    widget.isLoginFlow
+                        ? Navigator.pushNamed(context, '/signup')
+                        : Navigator.pushNamed(context, '/login');
                   },
                 ),
               ],

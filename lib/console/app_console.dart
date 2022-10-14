@@ -71,19 +71,31 @@ class _AppConsoleState extends ConsumerState<AppConsole> {
           scaffoldBackgroundColor: const Color(0xFFF4F6F7),
           colorScheme: const ColorScheme.light(
               background: primaryButtonColor, secondary: secondaryButtonColor)),
-      initialRoute: isLoggedIn(ref) ? '/home' : '/login',
+      initialRoute: isLoggedIn(ref) ? '/home' : '/signup',
       onGenerateRoute: (RouteSettings settings) {
         if (isLoggedIn(ref)) {
           return appConsoleRoute(settings);
-        } else if (settings.name!.startsWith('/login?email=')) {
+        } else if (settings.name!.startsWith('/signup?email=')) {
           final String userEmail = settings.name!.split("=")[1];
           return MyCustomRoute(
-              builder: (_) => CreatePasswordForm(email: userEmail),
+              builder: (_) => CreatePasswordForm(
+                    email: userEmail,
+                    isLoginFlow: false,
+                  ),
+              settings: RouteSettings(name: settings.name));
+        } else if (settings.name == '/login') {
+          return MyCustomRoute(
+              builder: (_) => const GetEmailForm(
+                    isLoginFlow: true,
+                  ),
+              settings: RouteSettings(name: settings.name));
+        } else {
+          return MyCustomRoute(
+              builder: (_) => const GetEmailForm(
+                    isLoginFlow: false,
+                  ),
               settings: RouteSettings(name: settings.name));
         }
-        return MyCustomRoute(
-            builder: (_) => const GetEmailForm(),
-            settings: RouteSettings(name: settings.name));
       },
     );
   }

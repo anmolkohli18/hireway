@@ -247,7 +247,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
                                     String inviteeName = _name;
                                     String inviteeEmail = _email;
                                     String loginLink =
-                                        "http://localhost:50609/#/login?email=$_email";
+                                        "http://localhost:50609/#/signup?email=$_email";
                                     sendEmail(
                                         businessName,
                                         inviterName,
