@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:hireway/emails/invite_email.dart';
+import 'package:hireway/apis/user_invite_email_html.dart';
 import 'package:http/http.dart' as http;
 
 Future<String> sendEmail(String companyName, String adminInviter,

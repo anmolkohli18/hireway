@@ -6,7 +6,7 @@ import 'package:hireway/respository/firebase/firebase_auth.dart';
 import 'package:hireway/respository/firestore/objects/hireway_user.dart';
 import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/firestore/repositories/users_repository.dart';
-import 'package:hireway/respository/send_email.dart';
+import 'package:hireway/apis/send_email.dart';
 import 'package:hireway/settings.dart';
 import 'package:intl/intl.dart';
 

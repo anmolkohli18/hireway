@@ -1,6 +1,7 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hireway/apis/send_calendar_invite.dart';
 import 'package:hireway/console/app_console.dart';
 import 'package:hireway/console/enums.dart';
 import 'package:hireway/custom_fields/auto_complete_multi_text_field.dart';
@@ -9,6 +10,7 @@ import 'package:hireway/respository/firestore/objects/candidate.dart';
 import 'package:hireway/respository/firestore/objects/round.dart';
 import 'package:hireway/respository/firestore/objects/schedule.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
+import 'package:hireway/respository/firestore/repositories/repository_helper.dart';
 import 'package:hireway/respository/firestore/repositories/rounds_repository.dart';
 import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
 import 'package:hireway/respository/firestore/repositories/users_repository.dart';
@@ -103,6 +105,14 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
         addedOnDateTime: now);
 
     await _schedulesRepository.insert(schedule);
+    String businessName = await getBusinessName();
+    await sendCalendarInvite(
+        getNameFromInfo(_candidateInfo),
+        getEmailFromInfo(_candidateInfo),
+        businessName,
+        _interviewers.split("|").map((e) => getEmailFromInfo(e)).toList(),
+        _startDateTime,
+        _startDateTime.add(Duration(minutes: durationInMinutes())));
     _interviewers.split("|").forEach((interviewer) async {
       Round round = Round(
           uid: const Uuid().v1(),
@@ -118,6 +128,20 @@ class _AddNewScheduleState extends ConsumerState<AddNewSchedule> {
 
     ref.read(scheduleStateProvider.notifier).state =
         SchedulesState.newScheduleAdded;
+  }
+
+  int durationInMinutes() {
+    switch (_duration) {
+      case "15 minutes":
+        return 15;
+      case "30 minutes":
+        return 30;
+      case "45 minutes":
+        return 45;
+      case "60 minutes":
+        return 60;
+    }
+    return 0;
   }
 
   Future<void> _updateCandidatesInterviewStage() async {
