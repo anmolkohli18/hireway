@@ -42,6 +42,7 @@ class _InviteNewUserState extends ConsumerState<InviteNewUser> {
     HirewayUser user = HirewayUser(
         name: _name,
         email: _email,
+        userRole: _userRole!,
         skills: _skills,
         available: _available,
         businessName: businessName,

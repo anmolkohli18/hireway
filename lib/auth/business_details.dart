@@ -67,6 +67,7 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
         name: userName,
         email: userEmail,
         skills: userSkills,
+        userRole: _userRole!,
         available: true,
         businessName: businessName,
         addedOnDateTime: now);

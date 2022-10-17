@@ -13,7 +13,7 @@ import 'package:hireway/console/roles/add_new_roles.dart';
 import 'package:hireway/console/roles/roles_list.dart';
 import 'package:hireway/console/schedule/add_new_schedule.dart';
 import 'package:hireway/settings.dart';
-import 'package:hireway/console/homepage.dart';
+import 'package:hireway/console/home/homepage.dart';
 import 'package:hireway/console/routes/routing.dart';
 import 'package:hireway/console/schedule/schedule_list.dart';
 import 'package:hireway/respository/firebase/firebase_auth.dart';

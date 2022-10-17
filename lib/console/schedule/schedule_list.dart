@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hireway/console/app_console.dart';
@@ -50,7 +48,6 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
 
   @override
   Widget build(BuildContext context) {
-    print("building schedule list");
     Widget widgetBuilder(List<Schedule> schedules) {
       return ScheduleListView(schedules: schedules);
     }

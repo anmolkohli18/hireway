@@ -1,6 +1,6 @@
 import 'package:enhance_stepper/enhance_stepper.dart';
 import 'package:flutter/material.dart';
-import 'package:hireway/custom_fields/builders.dart';
+import 'package:hireway/console/home/homepage_report.dart';
 import 'package:hireway/respository/firestore/repositories/candidates_repository.dart';
 import 'package:hireway/respository/firestore/repositories/roles_repository.dart';
 import 'package:hireway/respository/firestore/repositories/schedules_repository.dart';
@@ -59,7 +59,7 @@ class _HomepageState extends State<Homepage> {
           } else if (schedulesCount == 0) {
             return stepsBuilder(currentStep: 4);
           } else {
-            return stepsBuilder(currentStep: 2);
+            return HomepageReport();
           }
         }));
   }
