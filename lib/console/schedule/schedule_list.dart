@@ -52,8 +52,8 @@ class _SchedulesListState extends ConsumerState<SchedulesList>
       return ScheduleListView(schedules: schedules);
     }
 
-    // TODO    .orderBy('startDateTime', descending: false)
     return withFutureBuilder(
-        future: _schedulesRepository.getAll(), widgetBuilder: widgetBuilder);
+        future: _schedulesRepository.getAll(sortByStartDateTime: true),
+        widgetBuilder: widgetBuilder);
   }
 }

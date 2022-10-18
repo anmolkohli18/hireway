@@ -69,7 +69,9 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
     }
 
     return withFutureBuilder(
-        future: _candidatesRepository.getAll(), widgetBuilder: widgetBuilder);
+        future: _candidatesRepository.getAll(
+            sortByAddedOnDateTime: true, descending: true),
+        widgetBuilder: widgetBuilder);
   }
 
   Widget candidatesListView(List<Candidate> candidates) {

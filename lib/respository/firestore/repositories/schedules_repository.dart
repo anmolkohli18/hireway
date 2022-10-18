@@ -27,10 +27,18 @@ class SchedulesRepository {
     return _repo;
   }
 
-  Future<List<Schedule>> getAll() async {
+  Future<List<Schedule>> getAll(
+      {bool sortByStartDateTime = false, bool descending = false}) async {
     await _repo._subscribe();
-    final schedulesList = await _schedules.list();
-    return schedulesList.map((item) => Schedule.fromJson(item)).toList();
+    final List<Map<String, dynamic>> schedulesListDB = await _schedules.list();
+    final List<Schedule> schedulesList =
+        schedulesListDB.map((item) => Schedule.fromJson(item)).toList();
+    if (sortByStartDateTime) {
+      int compareTo(a, b) => a.startDateTime.compareTo(b.startDateTime);
+      schedulesList.sort((Schedule a, Schedule b) =>
+          descending ? compareTo(b, a) : compareTo(a, b));
+    }
+    return schedulesList;
   }
 
   Future<Schedule?> getOne(String startDateTime) async {

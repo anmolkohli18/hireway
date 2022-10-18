@@ -26,10 +26,19 @@ class CandidatesRepository {
     return _repo;
   }
 
-  Future<List<Candidate>> getAll() async {
+  Future<List<Candidate>> getAll(
+      {bool sortByAddedOnDateTime = false, bool descending = false}) async {
     await _repo._subscribe();
-    final candidatesList = await _candidates.list();
-    return candidatesList.map((item) => Candidate.fromJson(item)).toList();
+    final candidatesListDB = await _candidates.list();
+    final candidatesList =
+        candidatesListDB.map((item) => Candidate.fromJson(item)).toList();
+    if (sortByAddedOnDateTime) {
+      int compareTo(Candidate a, Candidate b) =>
+          a.addedOnDateTime.compareTo(b.addedOnDateTime);
+      candidatesList.sort((Candidate a, Candidate b) =>
+          descending ? compareTo(b, a) : compareTo(a, b));
+    }
+    return candidatesList;
   }
 
   Future<Candidate?> getOne(String emailId) async {
