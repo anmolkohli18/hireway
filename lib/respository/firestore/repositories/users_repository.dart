@@ -40,17 +40,17 @@ class UsersRepository {
   Future<void> insert(HirewayUser user) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withUserDocumentConverter(userDocument(user.email)).set(user);
+    withUserDocumentConverter(getUserDocument(user.email)).set(user);
     await _users.insert(user.toJson());
 
-    userMetaDocument(businessName).set({
+    getUserMetaDocument(businessName).set({
       "users": FieldValue.arrayUnion(["${user.name},${user.email}"])
     }, SetOptions(merge: true));
   }
 
   Future<void> update(HirewayUser user) async {
     await _repo._subscribe();
-    withUserDocumentConverter(userDocument(user.email))
+    withUserDocumentConverter(getUserDocument(user.email))
         .set(user, SetOptions(merge: true));
   }
 
@@ -81,7 +81,7 @@ class UsersRepository {
         users.listen((event) => populateVirtualDb(event, _users, "email"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> usersMetadata =
-        userMetaDocument(businessName).snapshots();
+        getUserMetaDocument(businessName).snapshots();
     usersMetadata.listen((event) => populateMetadataVirtualDB(event, _users));
 
     await users.first;

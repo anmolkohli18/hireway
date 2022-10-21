@@ -58,7 +58,7 @@ class _GetOnboardingDetailsFormState extends State<GetOnboardingDetailsForm> {
 
   void addClient(String businessName, String userEmail, String userName,
       String userRole, String userSkills) {
-    clientDocument(businessName).set({});
+    getClientDocument(businessName).set({});
 
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
     String now = dateFormat.format(DateTime.now());

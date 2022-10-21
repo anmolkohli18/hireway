@@ -131,7 +131,7 @@ class _CreatePasswordFormState extends State<CreatePasswordForm> {
                                       .then((userAccountState) {
                                     if (userAccountState ==
                                         UserAccountState.accountCreated) {
-                                      userDocument(widget.email).get().then(
+                                      getUserDocument(widget.email).get().then(
                                           (DocumentSnapshot<
                                                   Map<String, dynamic>>
                                               value) {

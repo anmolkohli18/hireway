@@ -40,10 +40,11 @@ class RolesRepository {
   Future<void> insert(Role role) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withRoleDocumentConverter(roleDocument(businessName, role.title)).set(role);
+    withRoleDocumentConverter(getRoleDocument(businessName, role.title))
+        .set(role);
     await _roles.insert(role.toJson());
 
-    roleMetaDocument(businessName).set({
+    getRoleMetaDocument(businessName).set({
       "roles": FieldValue.arrayUnion([role.title])
     }, SetOptions(merge: true));
   }
@@ -51,7 +52,8 @@ class RolesRepository {
   Future<void> update(Role role) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withRoleDocumentConverter(roleDocument(businessName, role.title)).set(role, SetOptions(merge: true));
+    withRoleDocumentConverter(getRoleDocument(businessName, role.title))
+        .set(role, SetOptions(merge: true));
     await _roles.update(role.toJson(), "title", role.title);
   }
 
@@ -81,9 +83,8 @@ class RolesRepository {
         roles.listen((event) => populateVirtualDb(event, _roles, "title"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> rolesMetadata =
-        roleMetaDocument(businessName).snapshots();
-    rolesMetadata
-        .listen((event) => populateMetadataVirtualDB(event, _roles));
+        getRoleMetaDocument(businessName).snapshots();
+    rolesMetadata.listen((event) => populateMetadataVirtualDB(event, _roles));
 
     await roles.first;
     await rolesMetadata.first;

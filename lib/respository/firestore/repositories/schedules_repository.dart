@@ -51,12 +51,12 @@ class SchedulesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     final String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
-    withScheduleDocumentConverter(scheduleDocument(
+    withScheduleDocumentConverter(getScheduleDocument(
             businessName, candidateEmail, schedule.startDateTime))
         .set(schedule);
     await _schedules.insert(schedule.toJson());
 
-    scheduleMetaDocument(businessName).set({
+    getScheduleMetaDocument(businessName).set({
       "schedules": FieldValue.arrayUnion(
           ["$candidateEmail,${schedule.startDateTime.toString()}"])
     }, SetOptions(merge: true));
@@ -66,7 +66,7 @@ class SchedulesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     String candidateEmail = getEmailFromInfo(schedule.candidateInfo);
-    withScheduleDocumentConverter(scheduleDocument(
+    withScheduleDocumentConverter(getScheduleDocument(
             businessName, candidateEmail, schedule.startDateTime))
         .set(schedule, SetOptions(merge: true));
     await _schedules.update(schedule.toJson(), "uid", schedule.uid);
@@ -98,7 +98,7 @@ class SchedulesRepository {
         .listen((event) => populateVirtualDb(event, _schedules, "uid"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> schedulesMetadata =
-        scheduleMetaDocument(businessName).snapshots();
+        getScheduleMetaDocument(businessName).snapshots();
     schedulesMetadata
         .listen((event) => populateMetadataVirtualDB(event, _schedules));
 

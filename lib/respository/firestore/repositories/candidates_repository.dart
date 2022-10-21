@@ -51,11 +51,11 @@ class CandidatesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     withCandidateDocumentConverter(
-            candidateDocument(businessName, candidate.email))
+            getCandidateDocument(businessName, candidate.email))
         .set(candidate);
     await _candidates.insert(candidate.toJson());
 
-    candidateMetaDocument(businessName).set({
+    getCandidateMetaDocument(businessName).set({
       "candidates":
           FieldValue.arrayUnion(["${candidate.name},${candidate.email}"])
     }, SetOptions(merge: true));
@@ -65,7 +65,7 @@ class CandidatesRepository {
     await _repo._subscribe();
     String businessName = await getBusinessName();
     withCandidateDocumentConverter(
-            candidateDocument(businessName, candidate.email))
+            getCandidateDocument(businessName, candidate.email))
         .set(candidate, SetOptions(merge: true));
     await _candidates.update(candidate.toJson(), "email", candidate.email);
   }
@@ -96,7 +96,7 @@ class CandidatesRepository {
         .listen((event) => populateVirtualDb(event, _candidates, "email"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> candidatesMetadata =
-        candidateMetaDocument(businessName).snapshots();
+        getCandidateMetaDocument(businessName).snapshots();
     candidatesMetadata
         .listen((event) => populateMetadataVirtualDB(event, _candidates));
 

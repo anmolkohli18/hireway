@@ -41,11 +41,12 @@ class ReportsRepository {
   Future<void> insert(Report report) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withReportDocumentConverter(reportDocument(businessName, report.reportId))
+    withReportDocumentConverter(
+            getReportDocument(businessName, report.reportId))
         .set(report);
     await _reports.insert(report.toJson());
 
-    reportMetaDocument(businessName).set({
+    getReportMetaDocument(businessName).set({
       "reports": FieldValue.arrayUnion([report.reportId])
     }, SetOptions(merge: true));
   }
@@ -53,7 +54,8 @@ class ReportsRepository {
   Future<void> update(Report report) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withReportDocumentConverter(reportDocument(businessName, report.reportId))
+    withReportDocumentConverter(
+            getReportDocument(businessName, report.reportId))
         .set(report, SetOptions(merge: true));
     await _reports.update(report.toJson(), "reportId", report.reportId);
   }
@@ -84,7 +86,7 @@ class ReportsRepository {
         .listen((event) => populateVirtualDb(event, _reports, "reportId"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> reportsMetadata =
-        reportMetaDocument(businessName).snapshots();
+        getReportMetaDocument(businessName).snapshots();
     reportsMetadata
         .listen((event) => populateMetadataVirtualDB(event, _reports));
 

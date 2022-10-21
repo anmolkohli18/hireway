@@ -44,7 +44,7 @@ Future<void> populateMetadataVirtualDB(
 Future<String> getBusinessName() async {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final document =
-      await withUserDocumentConverter(userDocument(auth.currentUser!.email!))
+      await withUserDocumentConverter(getUserDocument(auth.currentUser!.email!))
           .get();
   return document.data()!.businessName;
 }

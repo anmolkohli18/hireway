@@ -49,11 +49,11 @@ class RoundsRepository {
   Future<void> insert(Round round) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withRoundDocumentConverter(roundDocument(businessName, round.uid))
+    withRoundDocumentConverter(getRoundDocument(businessName, round.uid))
         .set(round);
     await _rounds.insert(round.toJson());
 
-    roundMetaDocument(businessName).set({
+    getRoundMetaDocument(businessName).set({
       "rounds": FieldValue.arrayUnion([round.uid])
     }, SetOptions(merge: true));
   }
@@ -61,7 +61,7 @@ class RoundsRepository {
   Future<void> update(Round round) async {
     await _repo._subscribe();
     String businessName = await getBusinessName();
-    withRoundDocumentConverter(roundDocument(businessName, round.uid))
+    withRoundDocumentConverter(getRoundDocument(businessName, round.uid))
         .set(round, SetOptions(merge: true));
     await _rounds.update(round.toJson(), "uid", round.uid);
   }
@@ -92,9 +92,8 @@ class RoundsRepository {
         rounds.listen((event) => populateVirtualDb(event, _rounds, "uid"));
 
     final Stream<DocumentSnapshot<Map<String, dynamic>>> roundsMetadata =
-        roundMetaDocument(businessName).snapshots();
-    roundsMetadata
-        .listen((event) => populateMetadataVirtualDB(event, _rounds));
+        getRoundMetaDocument(businessName).snapshots();
+    roundsMetadata.listen((event) => populateMetadataVirtualDB(event, _rounds));
 
     await rounds.first;
     await roundsMetadata.first;
