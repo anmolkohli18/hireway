@@ -42,6 +42,13 @@ class _HireRejectInterviewState extends ConsumerState<HireRejectInterview> {
               children: [
                 Expanded(
                   child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(150, 50),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(22)),
+                          textStyle: const TextStyle(fontSize: 18),
+                          backgroundColor: primaryButtonColor,
+                          foregroundColor: Colors.white),
                       onPressed: () {
                         Navigator.pushNamed(context, '/schedules/new',
                             arguments: {

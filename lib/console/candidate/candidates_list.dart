@@ -230,12 +230,11 @@ class _CandidatesListState extends ConsumerState<CandidatesList>
         ),
         ElevatedButton(
             style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 60),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                textStyle: const TextStyle(fontSize: 18),
-                backgroundColor: primaryButtonColor,
-                foregroundColor: Colors.white),
+              minimumSize: const Size(200, 60),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              textStyle: const TextStyle(fontSize: 18),
+            ),
             onPressed: () {
               Navigator.pushNamed(context, '/candidates/new');
             },

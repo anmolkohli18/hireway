@@ -5,6 +5,10 @@ import 'package:hireway/settings.dart';
 import 'package:hireway/console/app_console.dart';
 
 class DrawerWidget extends ConsumerWidget {
+  DrawerWidget({Key? key, required this.businessName}) : super(key: key);
+
+  final String businessName;
+
   final menuItems = [
     ["Home", Icons.home_outlined, '/home'],
     ["Candidates", Icons.person_outline, '/candidates'],
@@ -12,8 +16,6 @@ class DrawerWidget extends ConsumerWidget {
     ["Roles", Icons.computer_outlined, '/roles'],
     ["Users", Icons.person_outline, '/users'],
   ];
-
-  DrawerWidget({Key? key}) : super(key: key);
 
   List<Widget> getMenuTiles(BuildContext context, WidgetRef ref) {
     final selectedMenuItem = ref.watch(selectedMenuProvider.state).state;
@@ -61,14 +63,15 @@ class DrawerWidget extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 24, bottom: 40.0),
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 24, bottom: 40.0),
             child: ListTile(
-              leading:
-                  Icon(Icons.factory_outlined, color: primaryColor, size: 42),
               title: Text(
-                "Client Name",
-                style: heading1,
+                businessName,
+                style: const TextStyle(
+                    color: successColor,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
