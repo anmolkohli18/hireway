@@ -16,6 +16,7 @@ import 'package:hireway/console/schedule/schedule_list.dart';
 import 'package:hireway/console/users/invite_new_user.dart';
 import 'package:hireway/console/users/users_list.dart';
 
+final businessNameProvider = StateProvider((ref) => "");
 final selectedMenuProvider = StateProvider((ref) => 0);
 final candidatesStateProvider =
     StateProvider((ref) => CandidatesState.candidatesList);
@@ -24,13 +25,13 @@ final userStateProvider = StateProvider((ref) => UsersState.usersList);
 final scheduleStateProvider =
     StateProvider((ref) => SchedulesState.schedulesList);
 
-class AppConsole extends StatelessWidget {
+class AppConsole extends ConsumerWidget {
   const AppConsole({super.key, required this.routeSettings});
 
   final RouteSettings routeSettings;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: ((context, snapshot) {
@@ -69,28 +70,28 @@ class AppConsole extends StatelessWidget {
           if (user != null) {
             switch (routeSettings.name) {
               case '/home':
-                return wrapScaffold(const Homepage());
+                return wrapScaffoldDrawer(const Homepage());
               case '/candidates':
-                return wrapScaffold(const CandidatesList());
+                return wrapScaffoldDrawer(const CandidatesList());
               case '/candidates/new':
-                return wrapScaffold(const AddNewCandidate());
+                return wrapScaffoldDrawer(const AddNewCandidate());
               case '/schedules':
-                return wrapScaffold(const SchedulesList());
+                return wrapScaffoldDrawer(const SchedulesList());
               case '/schedules/new':
                 final String candidateInfo = routeSettings.arguments != null
                     ? (routeSettings.arguments as Map<String, String>)["info"]!
                     : "";
-                return wrapScaffold(AddNewSchedule(
+                return wrapScaffoldDrawer(AddNewSchedule(
                   info: candidateInfo,
                 ));
               case '/roles':
-                return wrapScaffold(const RolesList());
+                return wrapScaffoldDrawer(const RolesList());
               case '/roles/new':
-                return wrapScaffold(const AddNewRole());
+                return wrapScaffoldDrawer(const AddNewRole());
               case '/users':
-                return wrapScaffold(const UsersList());
+                return wrapScaffoldDrawer(const UsersList());
               case '/users/new':
-                return wrapScaffold(const InviteNewUser());
+                return wrapScaffoldDrawer(const InviteNewUser());
               default:
                 if (routeSettings.name!.startsWith('/candidates?name=')) {
                   final String candidateName = routeSettings.name!
@@ -99,12 +100,12 @@ class AppConsole extends StatelessWidget {
                       .replaceAll("%20", " ");
                   final String candidateEmail =
                       routeSettings.name!.split("=")[2];
-                  return wrapScaffold(CandidateProfile(
+                  return wrapScaffoldDrawer(CandidateProfile(
                     name: candidateName,
                     email: candidateEmail,
                   ));
                 } else {
-                  return wrapScaffold(const Homepage());
+                  return wrapScaffoldDrawer(const Homepage());
                 }
             }
           } else {
@@ -115,17 +116,12 @@ class AppConsole extends StatelessWidget {
         }));
   }
 
-  Widget wrapScaffold(Widget childWidget) {
+  Widget wrapScaffoldDrawer(Widget childWidget) {
     return Scaffold(
       body: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DrawerWidget(
-              businessName: "Ekta",
-            ),
-            Expanded(child: childWidget)
-          ]),
+          children: [DrawerWidget(), Expanded(child: childWidget)]),
     );
   }
 }

@@ -5,9 +5,7 @@ import 'package:hireway/settings.dart';
 import 'package:hireway/console/app_console.dart';
 
 class DrawerWidget extends ConsumerWidget {
-  DrawerWidget({Key? key, required this.businessName}) : super(key: key);
-
-  final String businessName;
+  DrawerWidget({Key? key}) : super(key: key);
 
   final menuItems = [
     ["Home", Icons.home_outlined, '/home'],
@@ -63,12 +61,16 @@ class DrawerWidget extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20, top: 24, bottom: 40.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 20, top: 24, bottom: 40.0),
             child: ListTile(
+              leading: Icon(
+                Icons.new_releases,
+                color: successColor,
+              ),
               title: Text(
-                businessName,
-                style: const TextStyle(
+                "Hire Way",
+                style: TextStyle(
                     color: successColor,
                     fontSize: 24,
                     fontWeight: FontWeight.bold),
